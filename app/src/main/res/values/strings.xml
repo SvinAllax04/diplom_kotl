@@ -91,4 +91,5 @@
     <string name="recovery_code_sent_demo">Код отправлен на %1$s. Демо-код: %2$s</string>
     <string name="camera_app_not_found">Не найдено приложение камеры на устройстве</string>
     <string name="camera_launch_failed">Не удалось запустить камеру</string>
+    <string name="camera_scan_failed">Не удалось обработать изображение камеры</string>
 </resources>
