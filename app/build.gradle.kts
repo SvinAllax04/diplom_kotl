@@ -37,6 +37,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.camerax.core)
+    implementation(libs.camerax.camera2)
+    implementation(libs.camerax.lifecycle)
+    implementation(libs.camerax.view)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.coil)
     implementation(libs.gson)
@@ -46,7 +50,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.recyclerview)
-    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation(libs.androidx.viewpager2)
     implementation(libs.material)
     implementation(libs.google.arcore)
     implementation(libs.sceneview)

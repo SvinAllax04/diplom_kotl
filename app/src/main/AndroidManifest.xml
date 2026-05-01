@@ -47,6 +47,11 @@
             android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
 
         <activity
+            android:name=".ui.roomcapture.RoomCaptureActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
             android:name=".ui.main.MainShellActivity"
             android:exported="true"
             android:theme="@style/Theme.Diplom_kotl.NoActionBar">

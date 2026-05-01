@@ -1,14 +1,11 @@
 package ru.vsu.cs.diplom_kotl.ui.main
 
 import android.content.Intent
-import android.content.ActivityNotFoundException
+import android.app.Activity
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.ImageDecoder
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -18,6 +15,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
@@ -29,6 +27,7 @@ import ru.vsu.cs.diplom_kotl.data.preferences.UserPreferencesRepository
 import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysisService
 import ru.vsu.cs.diplom_kotl.presentation.ArViewModel
 import ru.vsu.cs.diplom_kotl.ui.auth.AuthActivity
+import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomCaptureActivity
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -39,33 +38,20 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         factoryProducer = { (requireActivity() as MainShellActivity).arViewModelFactory },
     )
 
-    private val roomScanLauncher = registerForActivityResult(
-        ActivityResultContracts.TakePicturePreview(),
-    ) { bitmap ->
-        if (bitmap == null) {
-            if (isAdded) Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
-            return@registerForActivityResult
-        }
-        runCatching { processScannedBitmap(bitmap) }
-            .onFailure {
-                if (isAdded) {
-                    Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
-                }
+    private val roomCaptureLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (!isAdded || result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+        val path = result.data?.getStringExtra(RoomCaptureActivity.EXTRA_IMAGE_PATH)
+            ?: return@registerForActivityResult
+        val bitmap = BitmapFactory.decodeFile(path)
+        runCatching { java.io.File(path).delete() }
+        if (bitmap != null) {
+            runCatching { processScannedBitmap(bitmap) }.onFailure {
+                Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
             }
-    }
-
-    private val galleryLauncher = registerForActivityResult(
-        ActivityResultContracts.GetContent(),
-    ) { uri ->
-        if (uri == null) {
-            if (isAdded) Toast.makeText(requireContext(), R.string.gallery_pick_cancelled, Toast.LENGTH_SHORT).show()
-            return@registerForActivityResult
-        }
-        runCatching {
-            val bitmap = decodeBitmapFromUri(uri) ?: throw IllegalStateException("decode null")
-            processScannedBitmap(bitmap)
-        }.onFailure {
-            if (isAdded) Toast.makeText(requireContext(), R.string.gallery_decode_failed, Toast.LENGTH_SHORT).show()
+        } else if (isAdded) {
+            Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -154,7 +140,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
                 val bg = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                     cornerRadius = 999f
-                    setColor(runCatching { android.graphics.Color.parseColor(hex) }.getOrDefault(android.graphics.Color.DKGRAY))
+                    setColor(runCatching { hex.toColorInt() }.getOrElse { android.graphics.Color.DKGRAY })
                 }
                 background = bg
             }
@@ -167,15 +153,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     }
 
     private fun launchRoomScanSafely() {
-        try {
-            roomScanLauncher.launch(null)
-        } catch (_: ActivityNotFoundException) {
-            Toast.makeText(requireContext(), R.string.camera_app_not_found, Toast.LENGTH_SHORT).show()
-            galleryLauncher.launch("image/*")
-        } catch (_: Throwable) {
-            Toast.makeText(requireContext(), R.string.camera_launch_failed, Toast.LENGTH_SHORT).show()
-            galleryLauncher.launch("image/*")
-        }
+        roomCaptureLauncher.launch(Intent(requireContext(), RoomCaptureActivity::class.java))
     }
 
     private fun hasCameraPermission(): Boolean {
@@ -191,15 +169,4 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         Toast.makeText(requireContext(), R.string.profile_scan_done, Toast.LENGTH_SHORT).show()
     }
 
-    private fun decodeBitmapFromUri(uri: Uri): Bitmap? {
-        val ctx = requireContext()
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            val src = ImageDecoder.createSource(ctx.contentResolver, uri)
-            ImageDecoder.decodeBitmap(src)
-        } else {
-            ctx.contentResolver.openInputStream(uri)?.use { input ->
-                BitmapFactory.decodeStream(input)
-            }
-        }
-    }
 }

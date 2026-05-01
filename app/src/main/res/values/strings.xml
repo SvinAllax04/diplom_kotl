@@ -95,4 +95,10 @@
     <string name="camera_permission_required">Нужно разрешение на камеру для сканирования</string>
     <string name="gallery_pick_cancelled">Выбор фото отменён</string>
     <string name="gallery_decode_failed">Не удалось прочитать выбранное фото</string>
+
+    <string name="room_capture_cancel">Назад</string>
+    <string name="room_capture_gallery">Галерея</string>
+    <string name="room_capture_capture">Снять</string>
+    <string name="room_capture_not_ready">Камера ещё не готова</string>
+    <string name="room_capture_camera_unavailable">Камера недоступна. Выберите фото из галереи.</string>
 </resources>
