@@ -15,4 +15,61 @@
     <string name="role_user_label">Пользователь</string>
     <string name="role_store_label">Магазин</string>
     <string name="role_admin_label">Администратор</string>
+
+    <string name="nav_home">Главная</string>
+    <string name="nav_ar">AR</string>
+    <string name="nav_profile">Профиль</string>
+
+    <string name="home_recommendations_title">Рекомендации для вас</string>
+
+    <string name="style_modern">Модерн</string>
+    <string name="style_scandi">Скандинавский</string>
+    <string name="style_loft">Лофт</string>
+    <string name="style_classic">Классика</string>
+
+    <string name="card_color_label">Цвет: %1$s</string>
+    <string name="card_style_label">Стиль: %1$s</string>
+    <string name="card_dimensions_m">Размеры: %1$.2f × %2$.2f × %3$.2f м</string>
+    <string name="card_store_label">Магазин: %1$s</string>
+    <string name="card_price_value">%1$s ₽</string>
+    <string name="cd_furniture_photo">Фото мебели</string>
+
+    <string name="profile_title">Профиль</string>
+    <string name="profile_style_hint">Предпочитаемый стиль мебели</string>
+    <string name="profile_rec_switch">Учитывать стиль и цветовую гамму в рекомендациях</string>
+    <string name="profile_scan_room">Заново проанализировать цвета комнаты</string>
+    <string name="profile_logout">Выйти</string>
+
+    <string name="onboarding_style_title">Выберите стиль интерьера</string>
+    <string name="onboarding_style_subtitle">Мы будем подбирать мебель и подсказки под ваш вкус.</string>
+    <string name="onboarding_style_hint">Стиль</string>
+    <string name="onboarding_next">Далее</string>
+    <string name="onboarding_room_title">Цветовая гамма комнаты</string>
+    <string name="onboarding_room_subtitle">Сделайте снимок помещения — приложение выделит основные цвета для более точных рекомендаций. Этот шаг можно пропустить.</string>
+    <string name="onboarding_scan">Сканировать</string>
+    <string name="onboarding_later">Позже</string>
+    <string name="onboarding_pick_style">Выберите стиль из списка</string>
+    <string name="profile_scan_done">Палитра комнаты обновлена</string>
+
+    <string name="ar_save_png">Снимок PNG</string>
+    <string name="ar_share">Поделиться</string>
+    <string name="share_scene">Поделиться сценой</string>
+    <string name="png_saved">Снимок сохранён</string>
+    <string name="png_save_failed">Не удалось сохранить снимок</string>
+    <string name="share_failed">Не удалось поделиться</string>
+
+    <string name="ar_need_camera">Нужно разрешение на камеру для AR.</string>
+    <string name="ar_not_supported">ARCore не поддерживается на этом устройстве.</string>
+    <string name="ar_install_arcore">Установите или обновите Google Play Services for AR.</string>
+    <string name="ar_device_not_compatible">Устройство не совместимо с ARCore.</string>
+    <string name="ar_arcore_error">ARCore: %1$s</string>
+    <string name="ar_init_failed">Не удалось запустить AR: %1$s</string>
+    <string name="ar_scene_loaded">Сцена загружена, объектов: %1$d</string>
+    <string name="ar_status_line">Подсказки: %1$d • Объектов: %2$d/20</string>
+    <string name="ar_low_light">Низкая освещённость</string>
+    <string name="ar_limit_objects">Лимит: не более 20 объектов на сцене</string>
+    <string name="ar_no_fit">Объект не помещается в доступное пространство</string>
+    <string name="ar_object_added">Добавлено объектов: %1$d/20</string>
+    <string name="ar_not_ready">AR ещё не готов</string>
+    <string name="ar_catalog_store_price">%1$s • %2$s ₽</string>
 </resources>

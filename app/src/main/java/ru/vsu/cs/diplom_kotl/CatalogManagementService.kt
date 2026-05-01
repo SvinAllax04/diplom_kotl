@@ -6,7 +6,7 @@ import ru.vsu.cs.diplom_kotl.data.auth.UserSession
 import java.util.concurrent.CopyOnWriteArrayList
 
 class CatalogManagementService(
-    initialItems: List<FurnitureItem> = FurnitureCatalog().all()
+    initialItems: List<FurnitureItem> = emptyList(),
 ) {
     private val items = CopyOnWriteArrayList(initialItems)
 
