@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private var roomColorSamplingJob: Job? = null
     private var arInitialized = false
     private lateinit var statusText: TextView
+    private var selectedAssetPath: String = "models/chair.glb"
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -72,6 +73,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        selectedAssetPath = intent.getStringExtra(EXTRA_SELECTED_ASSET_PATH) ?: "models/chair.glb"
 
         if (hasCameraPermission().not()) {
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
@@ -257,7 +259,8 @@ class MainActivity : AppCompatActivity() {
                 return@launch
             }
 
-            val model = modelManager.getOrLoad(selected.assetPath)
+            val assetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
+            val model = modelManager.getOrLoad(assetPath)
             val modelNode = ModelNode(
                 modelInstance = model,
                 scaleToUnits = 1.0f,
@@ -266,7 +269,7 @@ class MainActivity : AppCompatActivity() {
             val anchorNode = AnchorNode(engine = arSceneView.engine, anchor = hitResult.createAnchor())
             anchorNode.addChildNode(modelNode)
             arSceneView.addChildNode(anchorNode)
-            objectController.register(anchorNode, modelNode, selected.assetPath, motionEvent)
+            objectController.register(anchorNode, modelNode, assetPath, motionEvent)
             statusText.text = "Добавлен объект: ${objectController.objectCount()}/20"
         }
     }
@@ -301,5 +304,9 @@ class MainActivity : AppCompatActivity() {
             modelManager.clear()
         }
         super.onDestroy()
+    }
+
+    companion object {
+        const val EXTRA_SELECTED_ASSET_PATH = "extra_selected_asset_path"
     }
 }
