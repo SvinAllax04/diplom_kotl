@@ -19,6 +19,8 @@ import androidx.core.content.ContextCompat
 import com.google.ar.core.ArCoreApk
 import com.google.ar.core.HitResult
 import com.google.ar.core.Plane
+import com.google.ar.core.exceptions.UnavailableDeviceNotCompatibleException
+import com.google.ar.core.exceptions.UnavailableUserDeclinedInstallationException
 import io.github.sceneview.ar.ARSceneView
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.math.Position
@@ -60,6 +62,8 @@ class MainActivity : AppCompatActivity() {
     private var arInitialized = false
     private lateinit var statusText: TextView
     private var selectedAssetPath: String = "models/chair.glb"
+    /** После INSTALL_REQUESTED нужно снова вызвать инициализацию в onResume. */
+    private var retryArInitAfterResume = false
 
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -89,8 +93,31 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        try {
+            when (ArCoreApk.getInstance().requestInstall(this, true)) {
+                ArCoreApk.InstallStatus.INSTALL_REQUESTED -> {
+                    retryArInitAfterResume = true
+                    return
+                }
+                ArCoreApk.InstallStatus.INSTALLED -> Unit
+            }
+        } catch (_: UnavailableUserDeclinedInstallationException) {
+            showFallback("Установите или обновите Google Play Services for AR.")
+            return
+        } catch (_: UnavailableDeviceNotCompatibleException) {
+            showFallback("Это устройство не совместимо с ARCore.")
+            return
+        } catch (e: Exception) {
+            showFallback("ARCore: ${e.message ?: e.javaClass.simpleName}")
+            return
+        }
+
         runCatching {
-            arSceneView = ARSceneView(this)
+            arSceneView = ARSceneView(
+                context = this,
+                sharedActivity = this,
+                sharedLifecycle = lifecycle,
+            )
             statusText = TextView(this).apply {
                 textSize = 13f
                 setTextColor(Color.WHITE)
@@ -177,8 +204,17 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             arInitialized = true
+            retryArInitAfterResume = false
         }.onFailure {
             showFallback("Не удалось инициализировать AR-сессию: ${it.message ?: "unknown error"}")
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (retryArInitAfterResume && hasCameraPermission()) {
+            retryArInitAfterResume = false
+            initializeArOrShowFallback()
         }
     }
 

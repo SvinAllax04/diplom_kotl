@@ -28,20 +28,26 @@ class FrameBitmapExtractor(
         if (rect.width() <= 0 || rect.height() <= 0) return null
 
         val bitmap = Bitmap.createBitmap(rect.width(), rect.height(), Bitmap.Config.ARGB_8888)
-        return suspendCancellableCoroutine { continuation ->
-            PixelCopy.request(
-                activity.window,
-                rect,
-                bitmap,
-                { result ->
-                    if (result == PixelCopy.SUCCESS) {
-                        continuation.resume(bitmap)
-                    } else {
-                        continuation.resume(null)
-                    }
-                },
-                Handler(Looper.getMainLooper())
-            )
+        return try {
+            suspendCancellableCoroutine { continuation ->
+                PixelCopy.request(
+                    activity.window,
+                    rect,
+                    bitmap,
+                    { result ->
+                        if (result == PixelCopy.SUCCESS) {
+                            continuation.resume(bitmap)
+                        } else {
+                            bitmap.recycle()
+                            continuation.resume(null)
+                        }
+                    },
+                    Handler(Looper.getMainLooper())
+                )
+            }
+        } catch (_: Throwable) {
+            bitmap.recycle()
+            null
         }
     }
 }
