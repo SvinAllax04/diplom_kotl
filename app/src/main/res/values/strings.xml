@@ -75,6 +75,7 @@
     <string name="ar_object_added">Добавлено объектов: %1$d/20</string>
     <string name="ar_not_ready">AR ещё не готов</string>
     <string name="ar_catalog_store_price">%1$s • %2$s ₽</string>
+    <string name="ar_detected_palette">Палитра комнаты: %1$s</string>
 
     <string name="product_try_in_ar">Примерить в дополненной реальности</string>
     <string name="product_together_title">Берут вместе с этим</string>
@@ -88,4 +89,6 @@
     <string name="recovery_success">Пароль успешно обновлён</string>
     <string name="recovery_error_generic">Не удалось выполнить восстановление</string>
     <string name="recovery_code_sent_demo">Код отправлен на %1$s. Демо-код: %2$s</string>
+    <string name="camera_app_not_found">Не найдено приложение камеры на устройстве</string>
+    <string name="camera_launch_failed">Не удалось запустить камеру</string>
 </resources>
