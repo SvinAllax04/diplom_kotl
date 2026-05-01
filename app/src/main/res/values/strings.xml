@@ -92,4 +92,5 @@
     <string name="camera_app_not_found">Не найдено приложение камеры на устройстве</string>
     <string name="camera_launch_failed">Не удалось запустить камеру</string>
     <string name="camera_scan_failed">Не удалось обработать изображение камеры</string>
+    <string name="camera_permission_required">Нужно разрешение на камеру для сканирования</string>
 </resources>
