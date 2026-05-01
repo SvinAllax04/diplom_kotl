@@ -5,7 +5,6 @@ import android.app.Activity
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -28,6 +27,7 @@ import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysisService
 import ru.vsu.cs.diplom_kotl.presentation.ArViewModel
 import ru.vsu.cs.diplom_kotl.ui.auth.AuthActivity
 import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomCaptureActivity
+import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomImageDecoder
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -44,7 +44,7 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
         if (!isAdded || result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
         val path = result.data?.getStringExtra(RoomCaptureActivity.EXTRA_IMAGE_PATH)
             ?: return@registerForActivityResult
-        val bitmap = BitmapFactory.decodeFile(path)
+        val bitmap = RoomImageDecoder.decodeForAnalysis(path)
         runCatching { java.io.File(path).delete() }
         if (bitmap != null) {
             runCatching { processScannedBitmap(bitmap) }.onFailure {

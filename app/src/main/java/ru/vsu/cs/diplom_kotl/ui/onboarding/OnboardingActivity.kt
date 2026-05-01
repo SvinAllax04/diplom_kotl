@@ -4,7 +4,6 @@ import android.content.Intent
 import android.Manifest
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -21,6 +20,7 @@ import ru.vsu.cs.diplom_kotl.data.preferences.UserPreferencesRepository
 import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysisService
 import ru.vsu.cs.diplom_kotl.ui.main.MainShellActivity
 import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomCaptureActivity
+import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomImageDecoder
 
 class OnboardingActivity : AppCompatActivity() {
 
@@ -32,7 +32,7 @@ class OnboardingActivity : AppCompatActivity() {
         if (result.resultCode != RESULT_OK) return@registerForActivityResult
         val path = result.data?.getStringExtra(RoomCaptureActivity.EXTRA_IMAGE_PATH)
             ?: return@registerForActivityResult
-        val bitmap = BitmapFactory.decodeFile(path)
+        val bitmap = RoomImageDecoder.decodeForAnalysis(path)
         runCatching { java.io.File(path).delete() }
         if (bitmap != null) {
             processScannedBitmap(bitmap)
