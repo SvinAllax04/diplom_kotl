@@ -37,6 +37,11 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".ui.auth.PasswordRecoveryActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
             android:name=".ui.onboarding.OnboardingActivity"
             android:exported="false"
             android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
@@ -50,6 +55,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ui.product.ProductDetailsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
 
         <meta-data
             android:name="com.google.ar.core"

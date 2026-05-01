@@ -11,6 +11,7 @@
     <string name="auth_register">Зарегистрироваться</string>
     <string name="auth_quick_admin">Быстрый вход администратора</string>
     <string name="auth_admin_demo_credentials">Демо-админ: admin@diplom.local — пароль admin12345</string>
+    <string name="auth_forgot_password">Забыли пароль?</string>
 
     <string name="role_user_label">Пользователь</string>
     <string name="role_store_label">Магазин</string>
@@ -50,6 +51,8 @@
     <string name="onboarding_later">Позже</string>
     <string name="onboarding_pick_style">Выберите стиль из списка</string>
     <string name="profile_scan_done">Палитра комнаты обновлена</string>
+    <string name="profile_palette_title">Ваша цветовая гамма комнаты</string>
+    <string name="profile_palette_empty">Палитра пока не отсканирована</string>
 
     <string name="ar_save_png">Снимок PNG</string>
     <string name="ar_share">Поделиться</string>
@@ -72,4 +75,17 @@
     <string name="ar_object_added">Добавлено объектов: %1$d/20</string>
     <string name="ar_not_ready">AR ещё не готов</string>
     <string name="ar_catalog_store_price">%1$s • %2$s ₽</string>
+
+    <string name="product_try_in_ar">Примерить в дополненной реальности</string>
+    <string name="product_together_title">Берут вместе с этим</string>
+    <string name="product_gallery_counter">%1$d / %2$d</string>
+
+    <string name="recovery_title">Восстановление пароля</string>
+    <string name="recovery_send_code">Получить recovery code</string>
+    <string name="recovery_code_hint">Recovery code</string>
+    <string name="recovery_new_password">Новый пароль</string>
+    <string name="recovery_reset_password">Сменить пароль</string>
+    <string name="recovery_success">Пароль успешно обновлён</string>
+    <string name="recovery_error_generic">Не удалось выполнить восстановление</string>
+    <string name="recovery_code_sent_demo">Код отправлен на %1$s. Демо-код: %2$s</string>
 </resources>
