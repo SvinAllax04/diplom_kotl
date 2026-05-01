@@ -93,4 +93,6 @@
     <string name="camera_launch_failed">Не удалось запустить камеру</string>
     <string name="camera_scan_failed">Не удалось обработать изображение камеры</string>
     <string name="camera_permission_required">Нужно разрешение на камеру для сканирования</string>
+    <string name="gallery_pick_cancelled">Выбор фото отменён</string>
+    <string name="gallery_decode_failed">Не удалось прочитать выбранное фото</string>
 </resources>

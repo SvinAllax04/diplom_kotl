@@ -4,6 +4,11 @@ import android.content.Intent
 import android.content.ActivityNotFoundException
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -37,18 +42,30 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private val roomScanLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicturePreview(),
     ) { bitmap ->
+        if (bitmap == null) {
+            if (isAdded) Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+        runCatching { processScannedBitmap(bitmap) }
+            .onFailure {
+                if (isAdded) {
+                    Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
+                }
+            }
+    }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent(),
+    ) { uri ->
+        if (uri == null) {
+            if (isAdded) Toast.makeText(requireContext(), R.string.gallery_pick_cancelled, Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
         runCatching {
-            if (bitmap != null) {
-                val analysis = RoomAnalysisService().analyze(bitmap)
-                prefs.saveRoomAnalysis(analysis)
-                arViewModel.applySavedRoomFromPrefs()
-                view?.findViewById<LinearLayout>(R.id.profilePaletteContainer)?.let { renderPalette(it) }
-                Toast.makeText(requireContext(), R.string.profile_scan_done, Toast.LENGTH_SHORT).show()
-            }
+            val bitmap = decodeBitmapFromUri(uri) ?: throw IllegalStateException("decode null")
+            processScannedBitmap(bitmap)
         }.onFailure {
-            if (isAdded) {
-                Toast.makeText(requireContext(), R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
-            }
+            if (isAdded) Toast.makeText(requireContext(), R.string.gallery_decode_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -154,13 +171,35 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             roomScanLauncher.launch(null)
         } catch (_: ActivityNotFoundException) {
             Toast.makeText(requireContext(), R.string.camera_app_not_found, Toast.LENGTH_SHORT).show()
+            galleryLauncher.launch("image/*")
         } catch (_: Throwable) {
             Toast.makeText(requireContext(), R.string.camera_launch_failed, Toast.LENGTH_SHORT).show()
+            galleryLauncher.launch("image/*")
         }
     }
 
     private fun hasCameraPermission(): Boolean {
         return ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
             PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun processScannedBitmap(bitmap: Bitmap) {
+        val analysis = RoomAnalysisService().analyze(bitmap)
+        prefs.saveRoomAnalysis(analysis)
+        arViewModel.applySavedRoomFromPrefs()
+        view?.findViewById<LinearLayout>(R.id.profilePaletteContainer)?.let { renderPalette(it) }
+        Toast.makeText(requireContext(), R.string.profile_scan_done, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun decodeBitmapFromUri(uri: Uri): Bitmap? {
+        val ctx = requireContext()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val src = ImageDecoder.createSource(ctx.contentResolver, uri)
+            ImageDecoder.decodeBitmap(src)
+        } else {
+            ctx.contentResolver.openInputStream(uri)?.use { input ->
+                BitmapFactory.decodeStream(input)
+            }
+        }
     }
 }
