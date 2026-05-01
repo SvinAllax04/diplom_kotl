@@ -1,9 +1,9 @@
 -- Merging decision tree log ---
 manifest
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-45:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-45:12
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-47:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-47:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-47:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-47:12
 MERGED from [com.google.android.material:material:1.13.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\5bf391afa3336cffd6d106ced295285e\transformed\material-1.13.0\AndroidManifest.xml:17:1-24:12
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:2:1-22:12
 MERGED from [androidx.appcompat:appcompat-resources:1.7.1] C:\Users\Roma\.gradle\caches\9.4.1\transforms\414d0dd0fb040c91591ad7f607c8e735\transformed\appcompat-resources-1.7.1\AndroidManifest.xml:2:1-7:12
@@ -91,15 +91,21 @@ MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:8:5-65
 	android:name
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:5:22-62
-uses-feature#android.hardware.camera.ar
+uses-feature#android.hardware.camera
 ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:6:5-8:36
 	android:required
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:8:9-33
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:7:9-50
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:7:9-47
+uses-feature#android.hardware.camera.ar
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:9:5-11:36
+	android:required
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:11:9-33
+	android:name
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:10:9-50
 application
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:10:5-43:19
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:10:5-43:19
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-45:19
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-45:19
 MERGED from [com.google.android.material:material:1.13.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\5bf391afa3336cffd6d106ced295285e\transformed\material-1.13.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.13.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\5bf391afa3336cffd6d106ced295285e\transformed\material-1.13.0\AndroidManifest.xml:22:5-20
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:10:5-20:19
@@ -125,66 +131,64 @@ MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\Ro
 	android:appComponentFactory
 		ADDED from [androidx.core:core:1.18.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\dff68481b4180628b843ee0aed949551\transformed\core-1.18.0\AndroidManifest.xml:28:18-86
 	android:supportsRtl
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:17:9-35
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:20:9-35
 	android:label
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:15:9-41
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:18:9-41
 	android:fullBackupContent
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:9-54
-	android:roundIcon
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:16:9-54
+	android:roundIcon
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:19:9-54
 	android:icon
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:14:9-43
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:17:9-43
 	android:allowBackup
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:11:9-35
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:14:9-35
 	android:theme
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:18:9-49
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:21:9-49
 	android:dataExtractionRules
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:12:9-65
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:15:9-65
 activity#ru.vsu.cs.diplom_kotl.ui.auth.AuthActivity
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:19:9-22:52
-	android:screenOrientation
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:22:13-49
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:22:9-26:58
+	android:windowSoftInputMode
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:26:13-55
 	android:exported
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:21:13-37
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:24:13-37
+	android:theme
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:25:13-65
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:20:13-49
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:23:13-49
 activity#ru.vsu.cs.diplom_kotl.MainActivity
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:24:9-27:52
-	android:screenOrientation
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:27:13-49
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:28:9-30:40
 	android:exported
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:26:13-37
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:30:13-37
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:25:13-41
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:29:13-41
 activity#ru.vsu.cs.diplom_kotl.ui.catalog.CatalogActivity
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:29:9-37:20
-	android:screenOrientation
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:32:13-49
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:32:9-39:20
 	android:exported
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:31:13-36
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:34:13-36
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:30:13-55
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:33:13-55
 intent-filter#action:name:android.intent.action.MAIN+category:name:android.intent.category.LAUNCHER
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:33:13-36:29
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:35:13-38:29
 action#android.intent.action.MAIN
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:34:17-69
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:36:17-69
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:34:25-66
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:36:25-66
 category#android.intent.category.LAUNCHER
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:35:17-77
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:37:17-77
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:35:27-74
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:37:27-74
 meta-data#com.google.ar.core
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:39:9-42:45
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:41:9-44:45
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:17:9-19:40
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:17:9-19:40
 	tools:replace
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:42:13-42
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:44:13-42
 	android:value
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:41:13-37
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:43:13-37
 		REJECTED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\74248ade0e531a846709b792a8ce787d\transformed\arsceneview-2.3.0\AndroidManifest.xml:19:13-37
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:40:13-46
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:42:13-46
 uses-sdk
 INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml reason: use-sdk injection requested
 INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml

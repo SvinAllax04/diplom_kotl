@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">diplom_kotl</string>
+
+    <string name="auth_title">Добро пожаловать</string>
+    <string name="auth_subtitle">Войдите или создайте аккаунт, чтобы открыть каталог мебели и режим AR.</string>
+    <string name="auth_hint_email">Электронная почта</string>
+    <string name="auth_hint_password">Пароль (не менее 6 символов)</string>
+    <string name="auth_hint_role">Тип аккаунта</string>
+    <string name="auth_role_hint">Для обычной работы выберите «Пользователь» или «Магазин». Роль «Администратор» — для тестов и модерации каталога.</string>
+    <string name="auth_login">Войти</string>
+    <string name="auth_register">Зарегистрироваться</string>
+    <string name="auth_quick_admin">Быстрый вход администратора</string>
+    <string name="auth_admin_demo_credentials">Демо-админ: admin@diplom.local — пароль admin12345</string>
+
+    <string name="role_user_label">Пользователь</string>
+    <string name="role_store_label">Магазин</string>
+    <string name="role_admin_label">Администратор</string>
 </resources>

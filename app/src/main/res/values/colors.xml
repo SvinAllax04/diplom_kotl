@@ -7,4 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="auth_background">#FFF5F7FA</color>
+    <color name="auth_on_background">#FF1C1B1F</color>
+    <color name="auth_on_background_muted">#FF49454F</color>
+    <color name="auth_error">#FFB3261E</color>
+    <color name="auth_success">#FF146C2E</color>
 </resources>

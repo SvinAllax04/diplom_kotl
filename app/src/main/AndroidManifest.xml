@@ -4,6 +4,9 @@
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+    <uses-feature
         android:name="android.hardware.camera.ar"
         android:required="false" />
 
@@ -19,17 +22,16 @@
         <activity
             android:name=".ui.auth.AuthActivity"
             android:exported="false"
-            android:screenOrientation="portrait" />
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".MainActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
+            android:exported="false" />
 
         <activity
             android:name=".ui.catalog.CatalogActivity"
-            android:exported="true"
-            android:screenOrientation="portrait">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
