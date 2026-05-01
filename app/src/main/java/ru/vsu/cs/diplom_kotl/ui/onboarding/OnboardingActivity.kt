@@ -35,8 +35,12 @@ class OnboardingActivity : AppCompatActivity() {
         val bitmap = RoomImageDecoder.decodeForAnalysis(path)
         runCatching { java.io.File(path).delete() }
         if (bitmap != null) {
-            processScannedBitmap(bitmap)
-            finishOnboarding()
+            runCatching {
+                processScannedBitmap(bitmap)
+                finishOnboarding()
+            }.onFailure {
+                Toast.makeText(this, R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
+            }
         } else {
             Toast.makeText(this, R.string.camera_scan_failed, Toast.LENGTH_SHORT).show()
         }
