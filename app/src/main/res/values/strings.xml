@@ -75,6 +75,7 @@
     <string name="ar_no_fit">Объект не помещается в доступное пространство</string>
     <string name="ar_object_added">Добавлено объектов: %1$d/20</string>
     <string name="ar_not_ready">AR ещё не готов</string>
+    <string name="ar_model_missing">3D-модель не найдена. Добавьте файл .glb в assets (например catalog/models/chair.glb) или проверьте путь в каталоге.</string>
     <string name="ar_catalog_store_price">%1$s • %2$s ₽</string>
     <string name="ar_detected_palette">Палитра комнаты: %1$s</string>
 

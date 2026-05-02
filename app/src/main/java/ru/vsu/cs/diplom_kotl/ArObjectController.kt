@@ -139,7 +139,7 @@ class ArObjectController(
         modelManager: ModelManager
     ) {
         state.objects.forEach { item ->
-            val model = modelManager.getOrLoad(item.assetPath)
+            val model = modelManager.getOrLoad(item.assetPath) ?: return@forEach
             val modelNode = ModelNode(modelInstance = model)
             modelNode.scale = Scale(item.scale, item.scale, item.scale)
             modelNode.rotation = Float3(0f, item.rotationY, 0f)

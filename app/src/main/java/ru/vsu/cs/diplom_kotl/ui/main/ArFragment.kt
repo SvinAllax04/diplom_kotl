@@ -74,7 +74,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private var arInitialized = false
     private var arFullSetupDone = false
     private var statusText: TextView? = null
-    private var selectedAssetPath: String = "models/chair.glb"
+    private var selectedAssetPath: String = "catalog/models/chair.glb"
     private var pendingSelectItemId: String? = null
     private var retryArInitAfterResume = false
 
@@ -537,7 +537,12 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             }
 
             val assetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
-            val model = mm.getOrLoad(assetPath)
+            val model = mm.getOrLoad(assetPath) ?: run {
+                arLog("Не удалось загрузить модель: $assetPath")
+                st.text = getString(R.string.ar_model_missing)
+                Toast.makeText(requireContext(), R.string.ar_model_missing, Toast.LENGTH_LONG).show()
+                return@launch
+            }
             val modelNode = ModelNode(
                 modelInstance = model,
                 scaleToUnits = 1.0f,
