@@ -17,6 +17,18 @@ class ModelManager(
     private val modelLoader = ModelLoader(context = context, engine = engine)
     private val cache = ConcurrentHashMap<String, ModelInstance>()
 
+    companion object {
+        /**
+         * Старые версии приложения и сохранённые сцены ссылались на пути вроде `models/chair.glb` без префикса `catalog/`.
+         */
+        fun normalizeAssetPath(path: String): String {
+            val p = path.trim()
+            if (p.isEmpty()) return p
+            if (!p.startsWith("catalog/") && p.startsWith("models/")) return "catalog/$p"
+            return p
+        }
+    }
+
     private fun assetExists(path: String): Boolean =
         path.isNotBlank() && runCatching {
             appContext.assets.open(path).use { }
@@ -27,28 +39,35 @@ class ModelManager(
      * Загрузка модели из assets. При отсутствии файла или ошибке — null (без вылета приложения).
      */
     suspend fun getOrLoad(assetPath: String): ModelInstance? {
-        if (assetPath.isBlank()) {
+        val path = normalizeAssetPath(assetPath)
+        if (path.isBlank()) {
             ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, "Пустой assetPath модели")
             return null
         }
-        cache[assetPath]?.let { return it }
-        if (!assetExists(assetPath)) {
+        if (path != assetPath.trim()) {
             ArCameraDiagnosticsLog.append(
                 ArCameraDiagnosticsLog.SOURCE_AR,
-                "Файл модели не найден в assets: $assetPath (положите .glb в app/src/main/assets/)",
+                "Путь модели нормализован: $assetPath → $path",
+            )
+        }
+        cache[path]?.let { return it }
+        if (!assetExists(path)) {
+            ArCameraDiagnosticsLog.append(
+                ArCameraDiagnosticsLog.SOURCE_AR,
+                "Файл модели не найден в assets: $path (положите .glb в app/src/main/assets/)",
             )
             return null
         }
         return runCatching {
             withContext(Dispatchers.IO) {
-                cache[assetPath] ?: modelLoader.createModelInstance(assetFileLocation = assetPath).also {
-                    cache[assetPath] = it
+                cache[path] ?: modelLoader.createModelInstance(assetFileLocation = path).also {
+                    cache[path] = it
                 }
             }
         }.getOrElse { e ->
             ArCameraDiagnosticsLog.append(
                 ArCameraDiagnosticsLog.SOURCE_AR,
-                "Ошибка загрузки модели $assetPath: ${e.javaClass.simpleName} ${e.message}",
+                "Ошибка загрузки модели $path: ${e.javaClass.simpleName} ${e.message}",
             )
             null
         }

@@ -536,7 +536,8 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
                 return@launch
             }
 
-            val assetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
+            val rawAssetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
+            val assetPath = ModelManager.normalizeAssetPath(rawAssetPath)
             val model = mm.getOrLoad(assetPath) ?: run {
                 arLog("Не удалось загрузить модель: $assetPath")
                 st.text = getString(R.string.ar_model_missing)

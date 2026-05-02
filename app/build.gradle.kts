@@ -16,8 +16,8 @@ android {
         minSdk = 24
         targetSdk = 36
         // versionName: MAJOR.MINOR.PATCH — мажор / минор / патч (см. сообщение к коммиту при релизе)
-        versionCode = 7
-        versionName = "1.2.4"
+        versionCode = 8
+        versionName = "1.2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

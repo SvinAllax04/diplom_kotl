@@ -139,7 +139,8 @@ class ArObjectController(
         modelManager: ModelManager
     ) {
         state.objects.forEach { item ->
-            val model = modelManager.getOrLoad(item.assetPath) ?: return@forEach
+            val path = ModelManager.normalizeAssetPath(item.assetPath)
+            val model = modelManager.getOrLoad(path) ?: return@forEach
             val modelNode = ModelNode(modelInstance = model)
             modelNode.scale = Scale(item.scale, item.scale, item.scale)
             modelNode.rotation = Float3(0f, item.rotationY, 0f)
@@ -154,7 +155,7 @@ class ArObjectController(
             val anchorNode = AnchorNode(engine = arSceneView.engine, anchor = anchor)
             anchorNode.addChildNode(modelNode)
             arSceneView.addChildNode(anchorNode)
-            objects += PlacedObject(anchorNode, modelNode, item.assetPath, item.scale, item.rotationY)
+            objects += PlacedObject(anchorNode, modelNode, path, item.scale, item.rotationY)
         }
     }
 }
