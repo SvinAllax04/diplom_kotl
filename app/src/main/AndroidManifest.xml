@@ -97,6 +97,11 @@
             android:exported="false"
             android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
 
+        <activity
+            android:name=".ui.diagnostics.ArDiagnosticsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional"

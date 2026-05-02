@@ -11,10 +11,10 @@ INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\Andro
 	android:name
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:25:13-62
 manifest
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-106:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-106:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-106:12
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-106:12
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-111:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-111:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-111:12
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:2:1-111:12
 MERGED from [androidx.camera:camera-video:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\83d6bb2a9515c83a144d658d40528939\transformed\camera-video-1.4.2\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.camera:camera-view:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\a63def4f273474ef5733411151f00ca3\transformed\camera-view-1.4.2\AndroidManifest.xml:2:1-7:12
 MERGED from [androidx.camera:camera-lifecycle:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\64cef4ed7d2b6a65cf2199f7e0595123\transformed\camera-lifecycle-1.4.2\AndroidManifest.xml:2:1-7:12
@@ -124,8 +124,8 @@ ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidM
 	android:name
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:10:9-50
 application
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-104:19
-INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-104:19
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-109:19
+INJECTED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:13:5-109:19
 MERGED from [androidx.camera:camera-camera2:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\a721c3ea81c02d58b14c340866753b68\transformed\camera-camera2-1.4.2\AndroidManifest.xml:23:5-34:19
 MERGED from [androidx.camera:camera-camera2:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\a721c3ea81c02d58b14c340866753b68\transformed\camera-camera2-1.4.2\AndroidManifest.xml:23:5-34:19
 MERGED from [androidx.camera:camera-core:1.4.2] C:\Users\Roma\.gradle\caches\9.4.1\transforms\9488c4c949ffa199db3e7affb11c99ef\transformed\camera-core-1.4.2\AndroidManifest.xml:23:5-34:19
@@ -280,17 +280,25 @@ ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidM
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:98:13-65
 	android:name
 		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:96:13-56
+activity#ru.vsu.cs.diplom_kotl.ui.diagnostics.ArDiagnosticsActivity
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:100:9-103:68
+	android:exported
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:102:13-37
+	android:theme
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:103:13-65
+	android:name
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:101:13-65
 meta-data#com.google.ar.core
-ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:100:9-103:45
+ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:105:9-108:45
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\7833ef41f51f61f99ad6b1d788edfee8\transformed\arsceneview-2.3.0\AndroidManifest.xml:17:9-19:40
 MERGED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\7833ef41f51f61f99ad6b1d788edfee8\transformed\arsceneview-2.3.0\AndroidManifest.xml:17:9-19:40
 	tools:replace
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:103:13-42
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:108:13-42
 	android:value
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:102:13-37
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:107:13-37
 		REJECTED from [io.github.sceneview:arsceneview:2.3.0] C:\Users\Roma\.gradle\caches\9.4.1\transforms\7833ef41f51f61f99ad6b1d788edfee8\transformed\arsceneview-2.3.0\AndroidManifest.xml:19:13-37
 	android:name
-		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:101:13-46
+		ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:106:13-46
 meta-data#android.support.FILE_PROVIDER_PATHS
 ADDED from C:\Users\Roma\AndroidStudioProjects\diplom_kotl\app\src\main\AndroidManifest.xml:29:13-31:54
 	android:resource

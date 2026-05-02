@@ -43,6 +43,7 @@ import ru.vsu.cs.diplom_kotl.ar.ArObjectController
 import ru.vsu.cs.diplom_kotl.ar.ArPerformanceTuner
 import ru.vsu.cs.diplom_kotl.ar.FrameBitmapExtractor
 import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureCatalog
+import ru.vsu.cs.diplom_kotl.data.diagnostics.ArCameraDiagnosticsLog
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
 import ru.vsu.cs.diplom_kotl.data.model.ModelManager
 import ru.vsu.cs.diplom_kotl.data.scene.SceneRepository
@@ -85,11 +86,14 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         view?.post {
             if (!isAdded || isHidden) return@post
             if (granted) {
+                arLog("Разрешение CAMERA: предоставлено")
                 runCatching { initializeArOrShowFallback() }
                     .onFailure {
+                        arLog("Ошибка инициализации после разрешения: ${it.message}")
                         showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
                     }
             } else {
+                arLog("Разрешение CAMERA: отклонено пользователем")
                 showFallback(getString(R.string.ar_need_camera))
             }
         }
@@ -109,6 +113,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         if (!isHidden) {
             scheduleArEntry()
         }
+        arLog("onViewCreated, EXTRA_ITEM_ID=${pendingSelectItemId ?: "—"}")
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
@@ -138,11 +143,14 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
 
     private fun tryStartArAfterPermission() {
         if (!hasCameraPermission()) {
+            arLog("Запрос разрешения CAMERA (вкладка AR видна)")
             cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
             return
         }
+        arLog("CAMERA уже есть, запуск initializeArOrShowFallback")
         runCatching { initializeArOrShowFallback() }
             .onFailure {
+                arLog("initializeArOrShowFallback исключение: ${it.message}")
                 showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
             }
     }
@@ -151,7 +159,9 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         if (!isAdded || view == null) return
         val ctx = requireContext()
         val arAvailability = ArCoreApk.getInstance().checkAvailability(ctx)
+        arLog("ARCore availability: supported=${arAvailability.isSupported}")
         if (!arAvailability.isSupported) {
+            arLog("Устройство не поддерживает ARCore (fallback UI)")
             showFallback(getString(R.string.ar_message_device_no_ar))
             return
         }
@@ -159,18 +169,24 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         try {
             when (ArCoreApk.getInstance().requestInstall(requireActivity(), true)) {
                 ArCoreApk.InstallStatus.INSTALL_REQUESTED -> {
+                    arLog("ARCore: запрошена установка, ожидание onResume")
                     retryArInitAfterResume = true
                     return
                 }
-                ArCoreApk.InstallStatus.INSTALLED -> Unit
+                ArCoreApk.InstallStatus.INSTALLED -> {
+                    arLog("ARCore: INSTALLED")
+                }
             }
         } catch (_: UnavailableUserDeclinedInstallationException) {
+            arLog("ARCore: пользователь отклонил установку")
             showFallback(getString(R.string.ar_install_arcore))
             return
         } catch (_: UnavailableDeviceNotCompatibleException) {
+            arLog("ARCore: устройство несовместимо")
             showFallback(getString(R.string.ar_device_not_compatible))
             return
         } catch (e: Exception) {
+            arLog("ARCore requestInstall: ${e.javaClass.simpleName} ${e.message}")
             showFallback(getString(R.string.ar_arcore_error, e.message ?: e.javaClass.simpleName))
             return
         }
@@ -180,11 +196,13 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         val overlay = root.findViewById<View>(R.id.arOverlayContent)
 
         if (arFullSetupDone) {
+            arLog("AR уже инициализирован (arFullSetupDone), только показ overlay")
             root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
             overlay.visibility = View.VISIBLE
             return
         }
 
+        arLog("Создание ARSceneView и привязка каталога…")
         runCatching {
             if (arSceneView == null) {
                 val sv = ARSceneView(
@@ -290,7 +308,9 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             arInitialized = true
             arFullSetupDone = true
             retryArInitAfterResume = false
+            arLog("AR сцена готова (arFullSetupDone=true)")
         }.onFailure {
+            arLog("Сбой полной инициализации AR: ${it.message}")
             showFallback(
                 getString(R.string.ar_message_module_wip) + "\n\n" +
                     getString(R.string.ar_init_failed, it.message ?: "unknown"),
@@ -301,6 +321,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private fun savePngToCache() {
         val sv = arSceneView
         if (!arInitialized || sv == null) {
+            arLog("savePng: AR не готов")
             Toast.makeText(requireContext(), R.string.ar_not_ready, Toast.LENGTH_SHORT).show()
             return
         }
@@ -308,8 +329,10 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         viewLifecycleOwner.lifecycleScope.launch {
             val bmp = extractor.capture(sv)
             if (bmp == null || !writePng(bmp, sharedFile())) {
+                arLog("savePng: не удалось сохранить кадр")
                 Toast.makeText(requireContext(), R.string.png_save_failed, Toast.LENGTH_SHORT).show()
             } else {
+                arLog("savePng: OK")
                 Toast.makeText(requireContext(), R.string.png_saved, Toast.LENGTH_SHORT).show()
             }
         }
@@ -318,6 +341,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private fun shareScenePng() {
         val sv = arSceneView
         if (!arInitialized || sv == null) {
+            arLog("share: AR не готов")
             Toast.makeText(requireContext(), R.string.ar_not_ready, Toast.LENGTH_SHORT).show()
             return
         }
@@ -326,9 +350,11 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             val bmp = extractor.capture(sv)
             val file = sharedFile()
             if (bmp == null || !writePng(bmp, file)) {
+                arLog("share: сбой записи PNG")
                 Toast.makeText(requireContext(), R.string.share_failed, Toast.LENGTH_SHORT).show()
                 return@launch
             }
+            arLog("share: отправка PNG")
             val uri = FileProvider.getUriForFile(
                 requireContext(),
                 "${requireContext().packageName}.fileprovider",
@@ -364,6 +390,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         if (!arInitialized) return
         val sv = arSceneView ?: return
         val extractor = frameBitmapExtractor ?: return
+        arLog("onStart: запуск периодического сэмплинга кадра для палитры")
         roomColorSamplingJob?.cancel()
         roomColorSamplingJob = viewLifecycleOwner.lifecycleScope.launch {
             while (isActive) {
@@ -381,6 +408,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         val repo = sceneRepository
         if (arInitialized && oc != null && repo != null) {
             roomColorSamplingJob?.cancel()
+            arLog("onStop: сохранение сцены, объектов=${oc.objectCount()}")
             viewLifecycleOwner.lifecycleScope.launch {
                 repo.save(SceneState(objects = oc.snapshot()))
             }
@@ -404,6 +432,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         statusText = null
         arInitialized = false
         arFullSetupDone = false
+        arLog("onDestroyView: AR view уничтожен")
         super.onDestroyView()
     }
 
@@ -438,6 +467,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         scroll.visibility = View.VISIBLE
         fallback.text = message
         overlay.visibility = View.GONE
+        arLog("Fallback UI: ${message.take(120).replace('\n', ' ')}")
 
         val itemId = pendingSelectItemId
             ?: requireActivity().intent.getStringExtra(MainShellActivity.EXTRA_AR_ITEM_ID)
@@ -518,6 +548,11 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             sv.addChildNode(anchorNode)
             oc.register(anchorNode, modelNode, assetPath, motionEvent)
             st.text = getString(R.string.ar_object_added, oc.objectCount())
+            arLog("Модель размещена: $assetPath, всего объектов=${oc.objectCount()}")
         }
+    }
+
+    private fun arLog(message: String) {
+        ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, message)
     }
 }

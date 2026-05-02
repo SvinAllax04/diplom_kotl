@@ -202,4 +202,15 @@
     <string name="settings_theme_room">Под цветовую гамму комнаты</string>
     <string name="settings_theme_room_hint">Акценты интерфейса подстраиваются под основной цвет палитры комнаты из профиля.</string>
     <string name="settings_apply_theme">Применить</string>
+    <string name="settings_ar_diagnostics">Журнал AR и камеры</string>
+
+    <string name="ar_diagnostics_title">Журнал AR и камеры</string>
+    <string name="ar_diagnostics_copy">Копировать</string>
+    <string name="ar_diagnostics_share">Поделиться</string>
+    <string name="ar_diagnostics_clear">Очистить</string>
+    <string name="ar_diagnostics_placeholder">Записей и сохранённых вылетов пока нет. После сбоя откройте этот экран снова — вверху будет отчёт с типом ошибки и stack trace. Также ведите журнал через AR и съёмку комнаты.</string>
+    <string name="ar_diagnostics_empty">Нет текста для копирования</string>
+    <string name="ar_diagnostics_copied">Текст скопирован в буфер обмена</string>
+    <string name="ar_diagnostics_cleared">Журнал очищен</string>
+    <string name="ar_diagnostics_clip_label">Журнал AR и камеры</string>
 </resources>

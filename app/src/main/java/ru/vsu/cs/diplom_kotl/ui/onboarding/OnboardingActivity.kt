@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
+import ru.vsu.cs.diplom_kotl.data.diagnostics.ArCameraDiagnosticsLog
 import ru.vsu.cs.diplom_kotl.data.preferences.UserPreferencesRepository
 import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysisService
 import ru.vsu.cs.diplom_kotl.ui.main.MainShellActivity
@@ -103,6 +104,10 @@ class OnboardingActivity : AppCompatActivity() {
     }
 
     private fun launchRoomScanSafely() {
+        ArCameraDiagnosticsLog.append(
+            ArCameraDiagnosticsLog.SOURCE_CAMERA,
+            "Онбординг: открыт RoomCaptureActivity",
+        )
         roomCaptureLauncher.launch(Intent(this, RoomCaptureActivity::class.java))
     }
 
