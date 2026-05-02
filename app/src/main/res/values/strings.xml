@@ -101,4 +101,78 @@
     <string name="room_capture_capture">Снять</string>
     <string name="room_capture_not_ready">Камера ещё не готова</string>
     <string name="room_capture_camera_unavailable">Камера недоступна. Выберите фото из галереи.</string>
+
+    <string name="home_subtitle_personalized">Персональные рекомендации по стилю и палитре комнаты</string>
+    <string name="home_subtitle_catalog_only">Персональные рекомендации отключены — показан общий каталог</string>
+    <string name="rec_reason_style">подходит по стилю</string>
+    <string name="rec_reason_palette">сочетается с палитрой комнаты</string>
+    <string name="rec_reason_hue">похожий оттенок</string>
+    <string name="rec_reason_low_light">учтена низкая освещённость</string>
+    <string name="rec_reason_catalog">из каталога</string>
+
+    <string name="ar_message_device_no_ar">Дополненная реальность недоступна на данном устройстве. Вы можете продолжить просмотр товара в обычном режиме.</string>
+    <string name="ar_message_module_wip">Модуль дополненной реальности подготовлен для интеграции 3D-моделей и находится в стадии доработки.</string>
+    <string name="ar_demo_back_catalog">К каталогу</string>
+    <string name="ar_try_on_demo_title">AR-примерка</string>
+    <string name="ar_try_on_demo_message">AR-примерка находится в стадии доработки. Сейчас можно оценить параметры выбранного товара и подготовить модель к последующему размещению в пространстве комнаты.</string>
+    <string name="ar_try_on_model_path_label">Путь к 3D-модели: %1$s</string>
+    <string name="ar_try_on_open_ar_section">Открыть раздел AR</string>
+    <string name="ar_try_on_back_catalog">Назад к каталогу</string>
+    <string name="product_favorite_cd">Добавить в избранное</string>
+
+    <string name="palette_edit_title">Правка палитры</string>
+    <string name="palette_edit_hint">Нажмите на звезду, чтобы выбрать основной цвет. Удалите лишние оттенки крестиком.</string>
+    <string name="palette_edit_save">Сохранить палитру</string>
+    <string name="palette_edit_empty">Палитра пуста. Сначала сделайте снимок комнаты на главной или в профиле.</string>
+    <string name="palette_edit_empty_cannot_save">Нет цветов для сохранения</string>
+    <string name="palette_set_primary_cd">Сделать основным цветом</string>
+    <string name="palette_remove_cd">Удалить цвет</string>
+
+    <string name="favorites_title">Избранное</string>
+    <string name="favorites_empty">В избранном пока нет товаров. Добавьте их со страницы товара.</string>
+    <string name="profile_edit_palette">Править палитру</string>
+    <string name="profile_saved_rooms">Сохранённые комнаты</string>
+    <string name="profile_favorites">Избранное</string>
+    <string name="profile_store_panel">Управление товарами (магазин)</string>
+    <string name="profile_admin_panel">Администрирование</string>
+
+    <string name="saved_rooms_title">Сохранённые комнаты</string>
+    <string name="saved_rooms_empty">Пока нет сохранённых комнат. После анализа комнаты можно сохранить палитру.</string>
+    <string name="saved_room_active_badge">Активна</string>
+    <string name="saved_room_activate">Использовать для рекомендаций</string>
+    <string name="saved_room_delete">Удалить</string>
+
+    <string name="room_save_dialog_title">Сохранить анализ как комнату?</string>
+    <string name="room_save_dialog_message">Укажите название (например, «Гостиная»). Палитру можно будет выбрать позже в списке комнат.</string>
+    <string name="room_save_name_hint">Название комнаты</string>
+    <string name="room_save_confirm">Сохранить</string>
+    <string name="room_save_skip">Не сохранять</string>
+    <string name="room_default_name">Комната</string>
+    <string name="room_saved_toast">Комната сохранена в списке</string>
+
+    <string name="store_management_title">Товары магазина</string>
+    <string name="store_management_intro">Демонстрационная форма: в полной версии данные будут отправляться на сервер или в локальную БД. Сейчас запись в каталог не выполняется.</string>
+    <string name="store_field_title">Название</string>
+    <string name="store_field_description">Описание</string>
+    <string name="store_field_price">Цена (₽)</string>
+    <string name="store_field_style">Стиль</string>
+    <string name="store_field_color">Цвет (HEX или название)</string>
+    <string name="store_field_dimensions">Размеры (Ш×Г×В, м)</string>
+    <string name="store_field_image_path">Путь к изображению в assets</string>
+    <string name="store_field_model_path">Путь к 3D-модели (.glb)</string>
+    <string name="store_demo_submit">Добавить товар (демо)</string>
+    <string name="store_demo_saved_stub">Демо: карточка проверена и готова к отправке на модерацию. В этой сборке каталог не изменяется.</string>
+    <string name="store_demo_need_title">Введите название товара</string>
+
+    <string name="admin_panel_title">Панель администратора</string>
+    <string name="admin_users_header">Пользователи</string>
+    <string name="admin_products_header">Товары и модерация</string>
+    <string name="admin_users_empty">Нет зарегистрированных аккаунтов в локальном списке.</string>
+    <string name="admin_user_line">%1$s — %2$s</string>
+    <string name="admin_product_line">%1$s — %2$s</string>
+    <string name="admin_demo_moderate">Демо: применить модерацию</string>
+    <string name="admin_demo_moderate_toast">Демо: изменение статусов будет доступно после подключения сервера или Room.</string>
+    <string name="mod_status_pending">на проверке</string>
+    <string name="mod_status_approved">одобрен</string>
+    <string name="mod_status_rejected">отклонён</string>
 </resources>

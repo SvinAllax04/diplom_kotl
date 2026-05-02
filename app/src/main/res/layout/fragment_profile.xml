@@ -53,6 +53,46 @@
             android:layout_marginTop="16dp"
             android:text="@string/profile_scan_room" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileEditPaletteButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_edit_palette" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileSavedRoomsButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_saved_rooms" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileFavoritesButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_favorites" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileStorePanelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_store_panel"
+            android:visibility="gone" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/profileAdminPanelButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/profile_admin_panel"
+            android:visibility="gone" />
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

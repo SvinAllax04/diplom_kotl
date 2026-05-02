@@ -66,6 +66,36 @@
             android:exported="false"
             android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
 
+        <activity
+            android:name=".ui.ar.ArTryOnDemoActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
+            android:name=".ui.palette.PaletteEditActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
+            android:name=".ui.favorites.FavoritesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
+            android:name=".ui.rooms.RoomListActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
+            android:name=".ui.store.StoreManagementActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
+        <activity
+            android:name=".ui.admin.AdminPanelActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Diplom_kotl.NoActionBar" />
+
         <meta-data
             android:name="com.google.ar.core"
             android:value="optional"

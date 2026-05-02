@@ -36,7 +36,7 @@ class TogetherFurnitureAdapter(
 
         fun bind(item: FurnitureItem, onClick: (FurnitureItem) -> Unit) {
             title.text = item.title
-            val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
+            val nf = NumberFormat.getNumberInstance(Locale.forLanguageTag("ru-RU"))
             price.text = itemView.context.getString(R.string.card_price_value, nf.format(item.priceRub.toLong()))
             val path = item.thumbnailAssetPath ?: item.galleryAssetPaths.firstOrNull()
             if (!path.isNullOrBlank()) {

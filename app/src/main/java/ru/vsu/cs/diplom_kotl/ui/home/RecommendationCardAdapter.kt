@@ -11,17 +11,18 @@ import coil.load
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureItem
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
+import ru.vsu.cs.diplom_kotl.presentation.HomeRecommendationRow
 import java.text.NumberFormat
 import java.util.Locale
 
 class RecommendationCardAdapter(
-    private val items: MutableList<FurnitureItem> = mutableListOf(),
+    private val rows: MutableList<HomeRecommendationRow> = mutableListOf(),
     private val onItemClick: (FurnitureItem) -> Unit,
 ) : RecyclerView.Adapter<RecommendationCardAdapter.CardVH>() {
 
-    fun submit(list: List<FurnitureItem>) {
-        items.clear()
-        items.addAll(list)
+    fun submit(list: List<HomeRecommendationRow>) {
+        rows.clear()
+        rows.addAll(list)
         notifyDataSetChanged()
     }
 
@@ -32,12 +33,12 @@ class RecommendationCardAdapter(
     }
 
     override fun onBindViewHolder(holder: CardVH, position: Int) {
-        val item = items[position]
-        holder.bind(item)
-        holder.itemView.setOnClickListener { onItemClick(item) }
+        val row = rows[position]
+        holder.bind(row)
+        holder.itemView.setOnClickListener { onItemClick(row.item) }
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun getItemCount(): Int = rows.size
 
     class CardVH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val photo = itemView.findViewById<ImageView>(R.id.cardPhoto)
@@ -48,8 +49,10 @@ class RecommendationCardAdapter(
         private val dimensions = itemView.findViewById<TextView>(R.id.cardDimensions)
         private val store = itemView.findViewById<TextView>(R.id.cardStore)
         private val price = itemView.findViewById<TextView>(R.id.cardPrice)
+        private val reason = itemView.findViewById<TextView>(R.id.cardRecommendReason)
 
-        fun bind(item: FurnitureItem) {
+        fun bind(row: HomeRecommendationRow) {
+            val item = row.item
             title.text = item.title
             val hex = String.format("#%06X", 0xFFFFFF and item.previewColor)
             colorHex.text = itemView.context.getString(R.string.card_color_label, hex)
@@ -77,6 +80,8 @@ class RecommendationCardAdapter(
                 photo.setImageDrawable(null)
                 photo.setBackgroundColor(item.previewColor)
             }
+            reason.text = row.reasonLine
+            reason.visibility = if (row.reasonLine.isBlank()) View.GONE else View.VISIBLE
         }
 
         private fun styleRu(s: InteriorStyle, ctx: android.content.Context): String {
@@ -90,7 +95,7 @@ class RecommendationCardAdapter(
         }
 
         private fun formatRub(value: Double): String {
-            val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
+            val nf = NumberFormat.getNumberInstance(Locale.forLanguageTag("ru-RU"))
             return itemView.context.getString(R.string.card_price_value, nf.format(value.toLong()))
         }
     }

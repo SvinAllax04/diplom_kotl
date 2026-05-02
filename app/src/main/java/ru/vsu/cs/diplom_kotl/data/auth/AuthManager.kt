@@ -22,6 +22,7 @@ class AuthManager(context: Context) {
             .putString(keyPassword, BUILTIN_ADMIN_PASSWORD)
             .putString("user:$BUILTIN_ADMIN_EMAIL:role", UserRole.ADMIN.name)
             .apply()
+        rememberEmailForDirectory(BUILTIN_ADMIN_EMAIL)
     }
 
     fun register(email: String, password: String, role: UserRole): Result<Unit> {
@@ -36,6 +37,7 @@ class AuthManager(context: Context) {
             .putString("user:$email:password", password)
             .putString("user:$email:role", role.name)
             .apply()
+        rememberEmailForDirectory(email)
         return Result.success(Unit)
     }
 
@@ -52,6 +54,7 @@ class AuthManager(context: Context) {
             .putString("session:email", email)
             .putString("session:role", role.name)
             .apply()
+        rememberEmailForDirectory(email)
         return Result.success(AuthUser(email, role))
     }
 
@@ -90,6 +93,39 @@ class AuthManager(context: Context) {
         return Result.success(code)
     }
 
+    /**
+     * Список зарегистрированных email для демо-админки (без паролей).
+     * В будущем заменяется запросом к API / Room.
+     */
+    fun listRegisteredAccounts(): List<Pair<String, UserRole>> {
+        val emails = linkedSetOf<String>()
+        prefs.getString(KEY_EMAIL_INDEX, null)
+            ?.split(',')
+            ?.map { it.trim().lowercase() }
+            ?.filter { it.isNotEmpty() }
+            ?.forEach { emails.add(it) }
+        emails.add(BUILTIN_ADMIN_EMAIL.lowercase())
+        return emails.sorted().map { email ->
+            val roleName = prefs.getString("user:$email:role", UserRole.USER.name)
+            val role = runCatching { UserRole.valueOf(roleName!!) }.getOrDefault(UserRole.USER)
+            email to role
+        }
+    }
+
+    private fun rememberEmailForDirectory(email: String) {
+        val key = email.trim().lowercase()
+        if (key.isEmpty()) return
+        val existing = prefs.getString(KEY_EMAIL_INDEX, null)
+            ?.split(',')
+            ?.map { it.trim().lowercase() }
+            ?.filter { it.isNotEmpty() }
+            ?.toMutableSet()
+            ?: mutableSetOf()
+        if (existing.add(key)) {
+            prefs.edit().putString(KEY_EMAIL_INDEX, existing.joinToString(",")).apply()
+        }
+    }
+
     fun resetPassword(email: String, code: String, newPassword: String): Result<Unit> {
         if (newPassword.length < 6) {
             return Result.failure(IllegalArgumentException("Пароль должен быть не короче 6 символов"))
@@ -117,5 +153,6 @@ class AuthManager(context: Context) {
     companion object {
         const val BUILTIN_ADMIN_EMAIL = "admin@diplom.local"
         const val BUILTIN_ADMIN_PASSWORD = "admin12345"
+        private const val KEY_EMAIL_INDEX = "registered_emails_csv"
     }
 }

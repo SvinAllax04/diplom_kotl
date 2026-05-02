@@ -3,6 +3,7 @@ package ru.vsu.cs.diplom_kotl.ui.home
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -22,6 +23,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val subtitle = view.findViewById<TextView>(R.id.homeSubtitle)
         val recycler = view.findViewById<RecyclerView>(R.id.homeRecycler)
         adapter = RecommendationCardAdapter(onItemClick = { item ->
             startActivity(
@@ -35,7 +37,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.items.collect { adapter.submit(it) }
+                launch {
+                    viewModel.rows.collect { adapter.submit(it) }
+                }
+                launch {
+                    viewModel.personalizedActive.collect { active ->
+                        subtitle.text = if (active) {
+                            getString(R.string.home_subtitle_personalized)
+                        } else {
+                            getString(R.string.home_subtitle_catalog_only)
+                        }
+                    }
+                }
             }
         }
     }

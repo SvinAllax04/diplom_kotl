@@ -9,6 +9,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -34,11 +37,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import coil.load
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.ar.ArObjectController
 import ru.vsu.cs.diplom_kotl.ar.ArPerformanceTuner
 import ru.vsu.cs.diplom_kotl.ar.FrameBitmapExtractor
 import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureCatalog
+import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
 import ru.vsu.cs.diplom_kotl.data.model.ModelManager
 import ru.vsu.cs.diplom_kotl.data.scene.SceneRepository
 import ru.vsu.cs.diplom_kotl.data.scene.SceneState
@@ -119,7 +124,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         val ctx = requireContext()
         val arAvailability = ArCoreApk.getInstance().checkAvailability(ctx)
         if (!arAvailability.isSupported) {
-            showFallback(getString(R.string.ar_not_supported))
+            showFallback(getString(R.string.ar_message_device_no_ar))
             return
         }
 
@@ -144,11 +149,10 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
 
         val root = view ?: return
         val container = root.findViewById<FrameLayout>(R.id.arOuterContainer)
-        val fallback = root.findViewById<TextView>(R.id.arFallbackMessage)
         val overlay = root.findViewById<View>(R.id.arOverlayContent)
 
         if (arFullSetupDone) {
-            fallback.visibility = View.GONE
+            root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
             overlay.visibility = View.VISIBLE
             return
         }
@@ -174,7 +178,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             val sv = arSceneView ?: error("ARSceneView")
 
             statusText = root.findViewById(R.id.arStatusText)
-            fallback.visibility = View.GONE
+            root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
             overlay.visibility = View.VISIBLE
 
             modelManager = ModelManager(context = ctx, engine = sv.engine)
@@ -259,7 +263,10 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             arFullSetupDone = true
             retryArInitAfterResume = false
         }.onFailure {
-            showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
+            showFallback(
+                getString(R.string.ar_message_module_wip) + "\n\n" +
+                    getString(R.string.ar_init_failed, it.message ?: "unknown"),
+            )
         }
     }
 
@@ -372,6 +379,16 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         super.onDestroyView()
     }
 
+    private fun styleLabel(style: InteriorStyle): String {
+        val res = when (style) {
+            InteriorStyle.MODERN -> R.string.style_modern
+            InteriorStyle.SCANDI -> R.string.style_scandi
+            InteriorStyle.LOFT -> R.string.style_loft
+            InteriorStyle.CLASSIC -> R.string.style_classic
+        }
+        return getString(res)
+    }
+
     private fun hasCameraPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             requireContext(),
@@ -382,11 +399,63 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private fun showFallback(message: String) {
         arInitialized = false
         val root = view ?: return
+        val scroll = root.findViewById<ScrollView>(R.id.arFallbackScroll)
         val fallback = root.findViewById<TextView>(R.id.arFallbackMessage)
         val overlay = root.findViewById<View>(R.id.arOverlayContent)
-        fallback.visibility = View.VISIBLE
+        val demoSection = root.findViewById<LinearLayout>(R.id.arDemoProductSection)
+        val demoImg = root.findViewById<ImageView>(R.id.arDemoProductImage)
+        val demoTitle = root.findViewById<TextView>(R.id.arDemoProductTitle)
+        val demoDetails = root.findViewById<TextView>(R.id.arDemoProductDetails)
+
+        scroll.visibility = View.VISIBLE
         fallback.text = message
         overlay.visibility = View.GONE
+
+        val itemId = pendingSelectItemId
+            ?: requireActivity().intent.getStringExtra(MainShellActivity.EXTRA_AR_ITEM_ID)
+        val item = itemId?.let { id -> catalogLoader.all().firstOrNull { it.id == id } }
+        if (item != null) {
+            demoSection.visibility = View.VISIBLE
+            demoTitle.text = item.title
+            val nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.forLanguageTag("ru-RU"))
+            demoDetails.text = buildString {
+                append(getString(R.string.card_style_label, styleLabel(item.style)))
+                append("\n")
+                val hex = String.format("#%06X", 0xFFFFFF and item.previewColor)
+                append(getString(R.string.card_color_label, hex))
+                append("\n")
+                append(
+                    getString(
+                        R.string.card_dimensions_m,
+                        item.widthM,
+                        item.depthM,
+                        item.heightM,
+                    ),
+                )
+                append("\n")
+                append(getString(R.string.card_price_value, nf.format(item.priceRub.toLong())))
+            }
+            val path = item.thumbnailAssetPath ?: item.galleryAssetPaths.firstOrNull()
+            if (!path.isNullOrBlank()) {
+                demoImg.load("file:///android_asset/$path") {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_launcher_foreground)
+                }
+            } else {
+                demoImg.setImageDrawable(null)
+                demoImg.setBackgroundColor(item.previewColor)
+            }
+        } else {
+            demoSection.visibility = View.GONE
+        }
+
+        root.findViewById<MaterialButton>(R.id.arFallbackBackCatalog).setOnClickListener {
+            startActivity(
+                Intent(requireContext(), MainShellActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                },
+            )
+        }
     }
 
     private fun placeModel(hitResult: HitResult, motionEvent: MotionEvent) {

@@ -66,6 +66,15 @@
                     tools:text="Скандинавский" />
 
                 <TextView
+                    android:id="@+id/cardRecommendReason"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:textColor="?attr/colorSecondary"
+                    android:textSize="12sp"
+                    tools:text="Подходит по стилю" />
+
+                <TextView
                     android:id="@+id/cardDimensions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

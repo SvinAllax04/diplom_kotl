@@ -37,6 +37,14 @@ class ArViewModel(
     private val _uiState = MutableStateFlow(buildInitialState())
     val uiState: StateFlow<ArUiState> = _uiState.asStateFlow()
 
+    init {
+        viewModelScope.launch {
+            prefs.updates.collect {
+                applySavedRoomFromPrefs()
+            }
+        }
+    }
+
     private fun buildInitialState(): ArUiState {
         val prefsRoom = roomSnapshotFromPrefs()
         val style = prefs.getPreferredStyle()

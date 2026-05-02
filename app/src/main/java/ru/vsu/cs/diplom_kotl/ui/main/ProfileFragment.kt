@@ -1,14 +1,15 @@
 package ru.vsu.cs.diplom_kotl.ui.main
 
-import android.content.Intent
 import android.app.Activity
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -18,16 +19,25 @@ import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.switchmaterial.SwitchMaterial
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.data.auth.AuthManager
+import ru.vsu.cs.diplom_kotl.data.auth.UserRole
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
 import ru.vsu.cs.diplom_kotl.data.preferences.UserPreferencesRepository
+import ru.vsu.cs.diplom_kotl.data.rooms.RoomHistoryRepository
+import ru.vsu.cs.diplom_kotl.data.rooms.SavedRoom
 import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysisService
 import ru.vsu.cs.diplom_kotl.presentation.ArViewModel
+import ru.vsu.cs.diplom_kotl.ui.admin.AdminPanelActivity
 import ru.vsu.cs.diplom_kotl.ui.auth.AuthActivity
+import ru.vsu.cs.diplom_kotl.ui.favorites.FavoritesActivity
+import ru.vsu.cs.diplom_kotl.ui.palette.PaletteEditActivity
 import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomCaptureActivity
 import ru.vsu.cs.diplom_kotl.ui.roomcapture.RoomImageDecoder
+import ru.vsu.cs.diplom_kotl.ui.rooms.RoomListActivity
+import ru.vsu.cs.diplom_kotl.ui.store.StoreManagementActivity
 
 class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
@@ -37,6 +47,23 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private val arViewModel: ArViewModel by activityViewModels(
         factoryProducer = { (requireActivity() as MainShellActivity).arViewModelFactory },
     )
+
+    private val paletteEditLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (!isAdded || result.resultCode != Activity.RESULT_OK) return@registerForActivityResult
+        view?.findViewById<LinearLayout>(R.id.profilePaletteContainer)?.let { renderPalette(it) }
+    }
+
+    private val roomListLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        if (!isAdded) return@registerForActivityResult
+        if (result.resultCode == Activity.RESULT_OK) {
+            arViewModel.applySavedRoomFromPrefs()
+        }
+        view?.findViewById<LinearLayout>(R.id.profilePaletteContainer)?.let { renderPalette(it) }
+    }
 
     private val roomCaptureLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
@@ -106,6 +133,32 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             }
         }
 
+        view.findViewById<MaterialButton>(R.id.profileEditPaletteButton).setOnClickListener {
+            paletteEditLauncher.launch(Intent(requireContext(), PaletteEditActivity::class.java))
+        }
+
+        view.findViewById<MaterialButton>(R.id.profileSavedRoomsButton).setOnClickListener {
+            roomListLauncher.launch(Intent(requireContext(), RoomListActivity::class.java))
+        }
+
+        view.findViewById<MaterialButton>(R.id.profileFavoritesButton).setOnClickListener {
+            startActivity(Intent(requireContext(), FavoritesActivity::class.java))
+        }
+
+        val role = authManager.currentUser()?.role
+        view.findViewById<MaterialButton>(R.id.profileStorePanelButton).apply {
+            visibility = if (role == UserRole.STORE || role == UserRole.ADMIN) View.VISIBLE else View.GONE
+            setOnClickListener {
+                startActivity(Intent(requireContext(), StoreManagementActivity::class.java))
+            }
+        }
+        view.findViewById<MaterialButton>(R.id.profileAdminPanelButton).apply {
+            visibility = if (role == UserRole.ADMIN) View.VISIBLE else View.GONE
+            setOnClickListener {
+                startActivity(Intent(requireContext(), AdminPanelActivity::class.java))
+            }
+        }
+
         renderPalette(view.findViewById(R.id.profilePaletteContainer))
 
         view.findViewById<MaterialButton>(R.id.profileLogoutButton).setOnClickListener {
@@ -164,9 +217,38 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
     private fun processScannedBitmap(bitmap: Bitmap) {
         val analysis = RoomAnalysisService().analyze(bitmap)
         prefs.saveRoomAnalysis(analysis)
-        arViewModel.applySavedRoomFromPrefs()
         view?.findViewById<LinearLayout>(R.id.profilePaletteContainer)?.let { renderPalette(it) }
         Toast.makeText(requireContext(), R.string.profile_scan_done, Toast.LENGTH_SHORT).show()
+
+        val input = EditText(requireContext()).apply {
+            hint = getString(R.string.room_save_name_hint)
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.room_save_dialog_title)
+            .setMessage(R.string.room_save_dialog_message)
+            .setView(input)
+            .setPositiveButton(R.string.room_save_confirm) { _, _ ->
+                val name = input.text.toString().trim().ifBlank {
+                    getString(R.string.room_default_name)
+                }
+                val history = RoomHistoryRepository(requireContext())
+                val room = SavedRoom(
+                    id = history.generateId(),
+                    name = name,
+                    createdAtMillis = System.currentTimeMillis(),
+                    colorHexes = prefs.getRoomDominantColorsHex(),
+                    primaryHex = prefs.getRoomPrimaryColorHex(),
+                    brightness = prefs.getRoomBrightness(),
+                    isLowLight = prefs.isRoomLowLight(),
+                    isActive = false,
+                )
+                history.addRoom(room)
+                Toast.makeText(requireContext(), R.string.room_saved_toast, Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(R.string.room_save_skip, null)
+            .show()
     }
 
 }

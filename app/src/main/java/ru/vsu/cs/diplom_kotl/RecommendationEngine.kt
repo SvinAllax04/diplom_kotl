@@ -6,6 +6,19 @@ import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureItem
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
 import kotlin.math.abs
 
+enum class RecommendationReason {
+    STYLE_MATCH,
+    PALETTE_MATCH,
+    SIMILAR_HUE,
+    LOW_LIGHT_OPTIMAL,
+    CATALOG_BROWSE,
+}
+
+data class RecommendedFurniture(
+    val item: FurnitureItem,
+    val reasons: List<RecommendationReason>,
+)
+
 data class RoomAnalysis(
     val dominantColors: List<Int>,
     val averageBrightness: Float,
@@ -77,7 +90,18 @@ class FurnitureRecommendationEngine {
         preferredStyle: InteriorStyle?,
         recommendationsEnabled: Boolean
     ): List<FurnitureItem> {
-        if (!recommendationsEnabled) return items
+        return recommendDetailed(room, items, preferredStyle, recommendationsEnabled).map { it.item }
+    }
+
+    fun recommendDetailed(
+        room: RoomAnalysis,
+        items: List<FurnitureItem>,
+        preferredStyle: InteriorStyle?,
+        recommendationsEnabled: Boolean
+    ): List<RecommendedFurniture> {
+        if (!recommendationsEnabled) {
+            return items.map { RecommendedFurniture(it, listOf(RecommendationReason.CATALOG_BROWSE)) }
+        }
 
         val candidates = if (preferredStyle != null) {
             items.filter { it.style == preferredStyle }
@@ -91,11 +115,29 @@ class FurnitureRecommendationEngine {
             if (candidates.isNotEmpty()) candidates else items
         }
 
-        return base.sortedByDescending { item ->
+        val sorted = base.sortedByDescending { item ->
             val colorScore = bestColorScore(room.dominantColors, item.previewColor)
             val styleScore = if (preferredStyle == null || item.style == preferredStyle) 1.0 else 0.65
             val lightPenalty = if (room.isLowLight && isVeryDark(item.previewColor)) 0.7 else 1.0
             colorScore * styleScore * lightPenalty
+        }
+
+        return sorted.map { item ->
+            val reasons = buildList {
+                if (preferredStyle != null && item.style == preferredStyle) {
+                    add(RecommendationReason.STYLE_MATCH)
+                }
+                val colorScore = bestColorScore(room.dominantColors, item.previewColor)
+                when {
+                    colorScore >= 0.55 -> add(RecommendationReason.PALETTE_MATCH)
+                    colorScore >= 0.35 -> add(RecommendationReason.SIMILAR_HUE)
+                }
+                if (room.isLowLight && !isVeryDark(item.previewColor)) {
+                    add(RecommendationReason.LOW_LIGHT_OPTIMAL)
+                }
+                if (isEmpty()) add(RecommendationReason.CATALOG_BROWSE)
+            }
+            RecommendedFurniture(item = item, reasons = reasons.distinct())
         }
     }
 

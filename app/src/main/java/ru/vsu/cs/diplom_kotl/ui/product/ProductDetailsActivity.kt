@@ -2,6 +2,7 @@ package ru.vsu.cs.diplom_kotl.ui.product
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,14 +13,16 @@ import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureCatalog
 import ru.vsu.cs.diplom_kotl.data.catalog.FurnitureItem
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
+import ru.vsu.cs.diplom_kotl.data.favorites.FavoritesRepository
 import ru.vsu.cs.diplom_kotl.domain.recommendation.PairingEngine
-import ru.vsu.cs.diplom_kotl.ui.main.MainShellActivity
+import ru.vsu.cs.diplom_kotl.ui.ar.ArTryOnDemoActivity
 import java.text.NumberFormat
 import java.util.Locale
 
 class ProductDetailsActivity : AppCompatActivity() {
     private val catalog by lazy { FurnitureCatalog(this) }
     private val pairing by lazy { PairingEngine() }
+    private val favorites by lazy { FavoritesRepository(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +48,7 @@ class ProductDetailsActivity : AppCompatActivity() {
             item.heightM,
         )
         findViewById<TextView>(R.id.productStore).text = getString(R.string.card_store_label, item.storeName)
-        val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
+        val nf = NumberFormat.getNumberInstance(Locale.forLanguageTag("ru-RU"))
         findViewById<TextView>(R.id.productPrice).text = getString(
             R.string.card_price_value,
             nf.format(item.priceRub.toLong()),
@@ -67,11 +70,23 @@ class ProductDetailsActivity : AppCompatActivity() {
             }
         })
 
+        val favBtn = findViewById<ImageButton>(R.id.productFavoriteButton)
+        fun refreshFavoriteIcon() {
+            val on = favorites.isFavorite(item.id)
+            favBtn.setImageResource(
+                if (on) android.R.drawable.star_big_on else android.R.drawable.star_big_off,
+            )
+        }
+        refreshFavoriteIcon()
+        favBtn.setOnClickListener {
+            favorites.toggle(item.id)
+            refreshFavoriteIcon()
+        }
+
         findViewById<MaterialButton>(R.id.productTryInArButton).setOnClickListener {
             startActivity(
-                Intent(this, MainShellActivity::class.java).apply {
-                    putExtra(MainShellActivity.EXTRA_START_TAB, MainShellActivity.TAB_AR)
-                    putExtra(MainShellActivity.EXTRA_AR_ITEM_ID, item.id)
+                Intent(this, ArTryOnDemoActivity::class.java).apply {
+                    putExtra(ArTryOnDemoActivity.EXTRA_ITEM_ID, item.id)
                 },
             )
         }

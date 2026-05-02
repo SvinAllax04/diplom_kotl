@@ -59,7 +59,7 @@ class FurnitureCatalogAdapter(
         fun bind(item: FurnitureItem, selected: Boolean) {
             title.text = item.title
             subtitle.text = "${item.style} • ${item.widthM} × ${item.depthM} × ${item.heightM} м"
-            val nf = NumberFormat.getNumberInstance(Locale("ru", "RU"))
+            val nf = NumberFormat.getNumberInstance(Locale.forLanguageTag("ru-RU"))
             storePrice.text = itemView.context.getString(
                 R.string.ar_catalog_store_price,
                 item.storeName,

@@ -55,10 +55,31 @@ class UserPreferencesRepository(context: Context) {
         return raw.split(',').mapNotNull { it.trim().takeIf(String::isNotEmpty) }
     }
 
-    fun getRoomDominantColorInts(): List<Int> =
-        getRoomDominantColorsHex().mapNotNull { hex ->
+    /** Основной цвет комнаты (для акцента в рекомендациях); должен быть одним из списка палитры. */
+    fun getRoomPrimaryColorHex(): String? =
+        prefs.getString(KEY_ROOM_PRIMARY_HEX, null)
+
+    fun setRoomPrimaryColorHex(hex: String?) {
+        prefs.edit {
+            if (hex.isNullOrBlank()) remove(KEY_ROOM_PRIMARY_HEX)
+            else putString(KEY_ROOM_PRIMARY_HEX, hex)
+        }
+        notifyChanged()
+    }
+
+    fun getRoomDominantColorInts(): List<Int> {
+        val hexes = getRoomDominantColorsHex()
+        val primary = getRoomPrimaryColorHex()
+        val ordered = if (primary != null && hexes.any { it.equals(primary, ignoreCase = true) }) {
+            val rest = hexes.filterNot { it.equals(primary, ignoreCase = true) }
+            listOf(primary) + rest
+        } else {
+            hexes
+        }
+        return ordered.mapNotNull { hex ->
             runCatching { Color.parseColor(hex) }.getOrNull()
         }
+    }
 
     fun getRoomBrightness(): Float =
         prefs.getFloat(KEY_ROOM_BRIGHTNESS, 0.35f)
@@ -67,13 +88,38 @@ class UserPreferencesRepository(context: Context) {
         prefs.getBoolean(KEY_ROOM_LOW_LIGHT, false)
 
     fun saveRoomAnalysis(analysis: RoomAnalysis) {
-        val hexList = analysis.dominantColors.joinToString(",") { c ->
+        val hexes = analysis.dominantColors.map { c ->
             String.format("#%06X", 0xFFFFFF and c)
         }
+        val hexList = hexes.joinToString(",")
+        val hadPrimary = prefs.getString(KEY_ROOM_PRIMARY_HEX, null)
         prefs.edit {
             putString(KEY_ROOM_COLORS_HEX, hexList)
             putFloat(KEY_ROOM_BRIGHTNESS, analysis.averageBrightness)
             putBoolean(KEY_ROOM_LOW_LIGHT, analysis.isLowLight)
+            if (hadPrimary == null && hexes.isNotEmpty()) {
+                putString(KEY_ROOM_PRIMARY_HEX, hexes.first())
+            }
+        }
+        notifyChanged()
+    }
+
+    fun saveManualPalette(
+        colorHexes: List<String>,
+        primaryHex: String?,
+        brightness: Float,
+        isLowLight: Boolean,
+    ) {
+        val cleaned = colorHexes.map { it.trim() }.filter { it.isNotEmpty() }
+        val primary = primaryHex?.trim()?.takeIf { p ->
+            cleaned.any { it.equals(p, ignoreCase = true) }
+        } ?: cleaned.firstOrNull()
+        prefs.edit {
+            putString(KEY_ROOM_COLORS_HEX, cleaned.joinToString(","))
+            putFloat(KEY_ROOM_BRIGHTNESS, brightness)
+            putBoolean(KEY_ROOM_LOW_LIGHT, isLowLight)
+            if (primary != null) putString(KEY_ROOM_PRIMARY_HEX, primary)
+            else remove(KEY_ROOM_PRIMARY_HEX)
         }
         notifyChanged()
     }
@@ -83,6 +129,7 @@ class UserPreferencesRepository(context: Context) {
             remove(KEY_ROOM_COLORS_HEX)
             remove(KEY_ROOM_BRIGHTNESS)
             remove(KEY_ROOM_LOW_LIGHT)
+            remove(KEY_ROOM_PRIMARY_HEX)
         }
         notifyChanged()
     }
@@ -95,5 +142,6 @@ class UserPreferencesRepository(context: Context) {
         private const val KEY_ROOM_COLORS_HEX = "room_colors_hex"
         private const val KEY_ROOM_BRIGHTNESS = "room_brightness"
         private const val KEY_ROOM_LOW_LIGHT = "room_low_light"
+        private const val KEY_ROOM_PRIMARY_HEX = "room_primary_hex"
     }
 }
