@@ -50,7 +50,13 @@ class ModelManager(
                 "Путь модели нормализован: $assetPath → $path",
             )
         }
-        cache[path]?.let { return it }
+        cache[path]?.let { cached ->
+            ArCameraDiagnosticsLog.append(
+                ArCameraDiagnosticsLog.SOURCE_AR,
+                "Модель из кэша (повторная загрузка не нужна): $path",
+            )
+            return cached
+        }
         if (!assetExists(path)) {
             ArCameraDiagnosticsLog.append(
                 ArCameraDiagnosticsLog.SOURCE_AR,
@@ -58,11 +64,20 @@ class ModelManager(
             )
             return null
         }
+        ArCameraDiagnosticsLog.append(
+            ArCameraDiagnosticsLog.SOURCE_AR,
+            "Загрузка .glb из assets (ModelLoader.createModelInstance): $path",
+        )
         return runCatching {
             withContext(Dispatchers.IO) {
-                cache[path] ?: modelLoader.createModelInstance(assetFileLocation = path).also {
-                    cache[path] = it
-                }
+                cache[path]?.let { return@withContext it }
+                val instance = modelLoader.createModelInstance(assetFileLocation = path)
+                cache[path] = instance
+                ArCameraDiagnosticsLog.append(
+                    ArCameraDiagnosticsLog.SOURCE_AR,
+                    "Модель прочитана из assets, ModelInstance создан и помещён в кэш: $path",
+                )
+                instance
             }
         }.getOrElse { e ->
             ArCameraDiagnosticsLog.append(
@@ -74,6 +89,13 @@ class ModelManager(
     }
 
     fun clear() {
+        val n = cache.size
         cache.clear()
+        if (n > 0) {
+            ArCameraDiagnosticsLog.append(
+                ArCameraDiagnosticsLog.SOURCE_AR,
+                "ModelManager.clear: очищен кэш моделей ($n записей)",
+            )
+        }
     }
 }

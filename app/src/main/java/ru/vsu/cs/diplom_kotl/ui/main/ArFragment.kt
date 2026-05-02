@@ -54,6 +54,7 @@ import ru.vsu.cs.diplom_kotl.presentation.ArViewModel
 import ru.vsu.cs.diplom_kotl.ui.catalog.FurnitureCatalogAdapter
 import java.io.File
 import java.io.FileOutputStream
+import java.util.Locale
 
 class ArFragment : Fragment(R.layout.fragment_ar) {
 
@@ -227,7 +228,9 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
             overlay.visibility = View.VISIBLE
 
-            modelManager = ModelManager(context = ctx, engine = sv.engine)
+            modelManager = ModelManager(context = ctx, engine = sv.engine).also {
+                arLog("ModelManager создан (Filament engine привязан к ARSceneView)")
+            }
             sceneRepository = SceneRepository(context = ctx)
             objectController = ArObjectController(arSceneView = sv)
             frameBitmapExtractor = FrameBitmapExtractor(activity = requireActivity())
@@ -243,6 +246,11 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
                         planeTypes = setOf(Plane.Type.HORIZONTAL_UPWARD_FACING),
                     )
                     if (hitResult != null) {
+                        val pose = hitResult.hitPose
+                        arLog(
+                            "hitTest OK: горизонтальная плоскость под точкой касания, " +
+                                "якорь t=(${fmt3(pose.tx())}, ${fmt3(pose.ty())}, ${fmt3(pose.tz())}) → размещение модели",
+                        )
                         placeModel(hitResult = hitResult, motionEvent = motionEvent)
                         true
                     } else {
@@ -272,11 +280,18 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             }
 
             viewLifecycleOwner.lifecycleScope.launch {
-                objectController!!.restore(
-                    state = sceneRepository!!.load(),
-                    modelManager = modelManager!!,
-                )
-                statusText?.text = getString(R.string.ar_scene_loaded, objectController!!.objectCount())
+                runCatching {
+                    arLog("Чтение сохранённой AR-сцены с диска…")
+                    val state = sceneRepository!!.load()
+                    arLog("Файл сцены: ${state.objects.size} объект(ов) в данных")
+                    objectController!!.restore(
+                        state = state,
+                        modelManager = modelManager!!,
+                    )
+                    statusText?.text = getString(R.string.ar_scene_loaded, objectController!!.objectCount())
+                }.onFailure { e ->
+                    arLog("Ошибка при восстановлении сцены: ${e.javaClass.simpleName}: ${e.message}")
+                }
             }
 
             uiStateCollectJob?.cancel()
@@ -288,7 +303,16 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
                     val preload = state.recommendations.take(2)
                     preload.forEach { item ->
                         launch(Dispatchers.IO) {
-                            mm.getOrLoad(item.assetPath)
+                            runCatching {
+                                val inst = mm.getOrLoad(item.assetPath)
+                                if (inst != null) {
+                                    arLog("Предзагрузка рекомендации OK: id=${item.id}, ${item.assetPath}")
+                                } else {
+                                    arLog("Предзагрузка: модель недоступна id=${item.id}, path=${item.assetPath}")
+                                }
+                            }.onFailure { e ->
+                                arLog("Предзагрузка id=${item.id}: ${e.javaClass.simpleName} ${e.message}")
+                            }
                         }
                     }
                     st.text = buildString {
@@ -522,41 +546,61 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         if (trackable is Plane && trackable.isPoseInPolygon(hitResult.hitPose).not()) return
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val selected = viewModel.uiState.value.selectedFurniture
-                ?: viewModel.uiState.value.recommendations.firstOrNull()
-                ?: return@launch
-            if (!oc.canAddObject()) {
-                st.text = getString(R.string.ar_limit_objects)
-                return@launch
-            }
+            runCatching {
+                val selected = viewModel.uiState.value.selectedFurniture
+                    ?: viewModel.uiState.value.recommendations.firstOrNull()
+                    ?: run {
+                        arLog("placeModel: нет выбранного товара и рекомендаций — отмена")
+                        return@launch
+                    }
+                if (!oc.canAddObject()) {
+                    st.text = getString(R.string.ar_limit_objects)
+                    arLog("placeModel: лимит объектов на сцене")
+                    return@launch
+                }
 
-            val roomBounds = RoomBounds(widthM = 4.0f, depthM = 4.0f, freeAreaM2 = 8.0f)
-            if (!placementPlanner.canFit(roomBounds, selected)) {
-                st.text = getString(R.string.ar_no_fit)
-                return@launch
-            }
+                val roomBounds = RoomBounds(widthM = 4.0f, depthM = 4.0f, freeAreaM2 = 8.0f)
+                if (!placementPlanner.canFit(roomBounds, selected)) {
+                    st.text = getString(R.string.ar_no_fit)
+                    arLog("placeModel: товар «${selected.title}» не проходит проверку размещения (canFit)")
+                    return@launch
+                }
 
-            val rawAssetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
-            val assetPath = ModelManager.normalizeAssetPath(rawAssetPath)
-            val model = mm.getOrLoad(assetPath) ?: run {
-                arLog("Не удалось загрузить модель: $assetPath")
-                st.text = getString(R.string.ar_model_missing)
-                Toast.makeText(requireContext(), R.string.ar_model_missing, Toast.LENGTH_LONG).show()
-                return@launch
+                val rawAssetPath = if (selected.assetPath.isNotBlank()) selected.assetPath else selectedAssetPath
+                val assetPath = ModelManager.normalizeAssetPath(rawAssetPath)
+                arLog(
+                    "placeModel: загрузка «${selected.title}» (id=${selected.id}), asset=$assetPath",
+                )
+                val model = mm.getOrLoad(assetPath) ?: run {
+                    arLog("placeModel: getOrLoad вернул null для $assetPath")
+                    st.text = getString(R.string.ar_model_missing)
+                    Toast.makeText(requireContext(), R.string.ar_model_missing, Toast.LENGTH_LONG).show()
+                    return@launch
+                }
+                arLog("placeModel: ModelInstance готов, создание ModelNode и AnchorNode…")
+                val modelNode = ModelNode(
+                    modelInstance = model,
+                    scaleToUnits = 1.0f,
+                    centerOrigin = Position(y = -0.5f),
+                )
+                val anchorNode = AnchorNode(engine = sv.engine, anchor = hitResult.createAnchor())
+                anchorNode.addChildNode(modelNode)
+                sv.addChildNode(anchorNode)
+                arLog(
+                    "placeModel: узлы добавлены в ARSceneView (дочерний ModelNode у AnchorNode), " +
+                        "модель должна быть видна в камере",
+                )
+                oc.register(anchorNode, modelNode, assetPath, motionEvent)
+                st.text = getString(R.string.ar_object_added, oc.objectCount())
+                arLog("placeModel: готово, всего объектов на сцене=${oc.objectCount()}, asset=$assetPath")
+            }.onFailure { e ->
+                arLog("placeModel: сбой ${e.javaClass.simpleName}: ${e.message}")
+                st.text = getString(R.string.ar_init_failed, e.message ?: e.javaClass.simpleName)
             }
-            val modelNode = ModelNode(
-                modelInstance = model,
-                scaleToUnits = 1.0f,
-                centerOrigin = Position(y = -0.5f),
-            )
-            val anchorNode = AnchorNode(engine = sv.engine, anchor = hitResult.createAnchor())
-            anchorNode.addChildNode(modelNode)
-            sv.addChildNode(anchorNode)
-            oc.register(anchorNode, modelNode, assetPath, motionEvent)
-            st.text = getString(R.string.ar_object_added, oc.objectCount())
-            arLog("Модель размещена: $assetPath, всего объектов=${oc.objectCount()}")
         }
     }
+
+    private fun fmt3(v: Float) = String.format(Locale.US, "%.3f", v)
 
     private fun arLog(message: String) {
         ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, message)

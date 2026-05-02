@@ -1,5 +1,6 @@
 package ru.vsu.cs.diplom_kotl.ar
 
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import dev.romainguy.kotlin.math.Float3
@@ -9,9 +10,11 @@ import io.github.sceneview.ar.ARSceneView
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.math.Scale
 import io.github.sceneview.node.ModelNode
+import ru.vsu.cs.diplom_kotl.data.diagnostics.ArCameraDiagnosticsLog
 import ru.vsu.cs.diplom_kotl.data.model.ModelManager
 import ru.vsu.cs.diplom_kotl.data.scene.PlacedObjectState
 import ru.vsu.cs.diplom_kotl.data.scene.SceneState
+import java.util.Locale
 import kotlin.math.atan2
 
 class ArObjectController(
@@ -32,11 +35,23 @@ class ArObjectController(
     private val scaleDetector = ScaleGestureDetector(
         arSceneView.context,
         object : ScaleGestureDetector.SimpleOnScaleGestureListener() {
+            override fun onScaleBegin(detector: ScaleGestureDetector): Boolean {
+                selectedObject?.let { o ->
+                    arDiag("Жест масштаба: начало (текущий коэффициент=${fmt(o.scaleFactor)})")
+                }
+                return true
+            }
+
             override fun onScale(detector: ScaleGestureDetector): Boolean {
                 val obj = selectedObject ?: return false
                 val updated = (obj.scaleFactor * detector.scaleFactor).coerceIn(0.2f, 3.0f)
                 obj.scaleFactor = updated
                 obj.modelNode.scale = Scale(updated, updated, updated)
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastScaleLogMs >= 450L) {
+                    lastScaleLogMs = now
+                    arDiag("Жест масштаба: scale=${fmt(updated)}")
+                }
                 return true
             }
         }
@@ -44,6 +59,15 @@ class ArObjectController(
 
     private var prevRotationAngle = 0f
     private var isRotating = false
+    private var lastDragLogMs = 0L
+    private var lastRotateLogMs = 0L
+    private var lastScaleLogMs = 0L
+
+    private fun arDiag(message: String) {
+        ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, message)
+    }
+
+    private fun fmt(v: Float) = String.format(Locale.US, "%.3f", v)
 
     fun register(anchorNode: AnchorNode, modelNode: ModelNode, assetPath: String, event: MotionEvent) {
         if (objects.size >= maxObjects) return
@@ -54,6 +78,11 @@ class ArObjectController(
         )
         objects += placed
         selectedObject = placed
+        val p = anchorNode.worldPosition
+        arDiag(
+            "Модель в сцене (жесты): зарегистрирован объект №${objects.size}, asset=$assetPath, " +
+                "мировая позиция ≈ (${fmt(p.x)}, ${fmt(p.y)}, ${fmt(p.z)})",
+        )
         onTouch(event)
     }
 
@@ -84,6 +113,15 @@ class ArObjectController(
 
         obj.anchorNode.anchor?.detach()
         obj.anchorNode.anchor = validHit.createAnchor()
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastDragLogMs >= 550L) {
+            lastDragLogMs = now
+            val p = obj.anchorNode.worldPosition
+            arDiag(
+                "Перетаскивание: объект №${objects.indexOf(obj) + 1} перепривязан к плоскости, " +
+                    "позиция ≈ (${fmt(p.x)}, ${fmt(p.y)}, ${fmt(p.z)})",
+            )
+        }
     }
 
     private fun handleRotation(event: MotionEvent) {
@@ -95,6 +133,7 @@ class ArObjectController(
             MotionEvent.ACTION_POINTER_DOWN -> {
                 prevRotationAngle = angle
                 isRotating = true
+                arDiag("Жест вращения: начало (2 пальца)")
             }
 
             MotionEvent.ACTION_MOVE -> {
@@ -103,6 +142,11 @@ class ArObjectController(
                 prevRotationAngle = angle
                 obj.rotationYDegrees += delta
                 obj.modelNode.rotation = obj.modelNode.rotation + Float3(0f, delta, 0f)
+                val now = SystemClock.elapsedRealtime()
+                if (now - lastRotateLogMs >= 450L) {
+                    lastRotateLogMs = now
+                    arDiag("Вращение: Δ=${fmt(delta)}°, накопленный rotationY≈${fmt(obj.rotationYDegrees)}°")
+                }
             }
         }
     }
@@ -138,9 +182,14 @@ class ArObjectController(
         state: SceneState,
         modelManager: ModelManager
     ) {
+        arDiag("Восстановление сцены: в файле ${state.objects.size} сохранённых объект(ов)")
+        var restored = 0
         state.objects.forEach { item ->
             val path = ModelManager.normalizeAssetPath(item.assetPath)
-            val model = modelManager.getOrLoad(path) ?: return@forEach
+            val model = modelManager.getOrLoad(path) ?: run {
+                arDiag("Восстановление: пропуск — нет модели для пути $path (было в сохранении: ${item.assetPath})")
+                return@forEach
+            }
             val modelNode = ModelNode(modelInstance = model)
             modelNode.scale = Scale(item.scale, item.scale, item.scale)
             modelNode.rotation = Float3(0f, item.rotationY, 0f)
@@ -156,6 +205,13 @@ class ArObjectController(
             anchorNode.addChildNode(modelNode)
             arSceneView.addChildNode(anchorNode)
             objects += PlacedObject(anchorNode, modelNode, path, item.scale, item.rotationY)
+            restored++
+            val p = anchorNode.worldPosition
+            arDiag(
+                "Восстановлен объект №$restored: $path, scale=${fmt(item.scale)}, " +
+                    "pos≈(${fmt(p.x)}, ${fmt(p.y)}, ${fmt(p.z)})",
+            )
         }
+        arDiag("Восстановление сцены завершено: в сцене $restored из ${state.objects.size} записей")
     }
 }
