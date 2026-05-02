@@ -2,6 +2,7 @@
   {
     "id": "chair_beige",
     "title": "Кресло бежевое",
+    "category": "CHAIR",
     "assetPath": "models/chair.glb",
     "thumbnailAssetPath": null,
     "galleryAssetPaths": [],
@@ -18,6 +19,7 @@
   {
     "id": "sofa_gray",
     "title": "Диван серый",
+    "category": "SOFA",
     "assetPath": "models/chair.glb",
     "thumbnailAssetPath": null,
     "galleryAssetPaths": [],
@@ -34,6 +36,7 @@
   {
     "id": "table_oak",
     "title": "Стол дубовый",
+    "category": "TABLE",
     "assetPath": "models/chair.glb",
     "thumbnailAssetPath": null,
     "galleryAssetPaths": [],
@@ -50,6 +53,7 @@
   {
     "id": "shelf_white",
     "title": "Стеллаж белый",
+    "category": "STORAGE",
     "assetPath": "models/chair.glb",
     "thumbnailAssetPath": null,
     "galleryAssetPaths": [],

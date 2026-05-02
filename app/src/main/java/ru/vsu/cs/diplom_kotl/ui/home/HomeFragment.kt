@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.launch
 import ru.vsu.cs.diplom_kotl.R
+import ru.vsu.cs.diplom_kotl.data.preferences.UserPreferencesRepository
 import ru.vsu.cs.diplom_kotl.presentation.HomeViewModel
 import ru.vsu.cs.diplom_kotl.ui.product.ProductDetailsActivity
 
@@ -41,12 +42,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     viewModel.rows.collect { adapter.submit(it) }
                 }
                 launch {
-                    viewModel.personalizedActive.collect { active ->
-                        subtitle.text = if (active) {
-                            getString(R.string.home_subtitle_personalized)
-                        } else {
-                            getString(R.string.home_subtitle_catalog_only)
-                        }
+                    viewModel.personalizedActive.collect {
+                        subtitle.text = homeSubtitleText()
                     }
                 }
             }
@@ -56,5 +53,18 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onResume() {
         super.onResume()
         viewModel.refresh()
+        view?.findViewById<TextView>(R.id.homeSubtitle)?.text = homeSubtitleText()
+    }
+
+    private fun homeSubtitleText(): String {
+        val prefs = UserPreferencesRepository(requireContext())
+        val styleOn = prefs.isRecommendationStyleEnabled()
+        val paletteOn = prefs.isRecommendationPaletteEnabled()
+        return when {
+            styleOn && paletteOn -> getString(R.string.home_subtitle_personalized)
+            styleOn -> getString(R.string.home_subtitle_style_only)
+            paletteOn -> getString(R.string.home_subtitle_palette_only)
+            else -> getString(R.string.home_subtitle_catalog_only)
+        }
     }
 }

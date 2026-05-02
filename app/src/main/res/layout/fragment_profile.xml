@@ -39,13 +39,6 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.switchmaterial.SwitchMaterial
-            android:id="@+id/profileRecSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/profile_rec_switch" />
-
         <com.google.android.material.button.MaterialButton
             android:id="@+id/profileScanRoomButton"
             android:layout_width="match_parent"

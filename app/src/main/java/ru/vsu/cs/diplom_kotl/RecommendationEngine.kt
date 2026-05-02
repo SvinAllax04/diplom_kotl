@@ -88,52 +88,64 @@ class FurnitureRecommendationEngine {
         room: RoomAnalysis,
         items: List<FurnitureItem>,
         preferredStyle: InteriorStyle?,
-        recommendationsEnabled: Boolean
+        useStyle: Boolean,
+        usePalette: Boolean,
     ): List<FurnitureItem> {
-        return recommendDetailed(room, items, preferredStyle, recommendationsEnabled).map { it.item }
+        return recommendDetailed(room, items, preferredStyle, useStyle, usePalette).map { it.item }
     }
 
     fun recommendDetailed(
         room: RoomAnalysis,
         items: List<FurnitureItem>,
         preferredStyle: InteriorStyle?,
-        recommendationsEnabled: Boolean
+        useStyle: Boolean,
+        usePalette: Boolean,
     ): List<RecommendedFurniture> {
-        if (!recommendationsEnabled) {
+        if (!useStyle && !usePalette) {
             return items.map { RecommendedFurniture(it, listOf(RecommendationReason.CATALOG_BROWSE)) }
         }
 
-        val candidates = if (preferredStyle != null) {
-            items.filter { it.style == preferredStyle }
-        } else {
-            items
+        val candidates = when {
+            useStyle && preferredStyle != null -> items.filter { it.style == preferredStyle }
+            else -> items
         }
 
-        val base = if (room.isLikelyEmpty && preferredStyle != null && candidates.isNotEmpty()) {
+        val base = if (useStyle && room.isLikelyEmpty && preferredStyle != null && candidates.isNotEmpty()) {
             candidates
         } else {
             if (candidates.isNotEmpty()) candidates else items
         }
 
         val sorted = base.sortedByDescending { item ->
-            val colorScore = bestColorScore(room.dominantColors, item.previewColor)
-            val styleScore = if (preferredStyle == null || item.style == preferredStyle) 1.0 else 0.65
-            val lightPenalty = if (room.isLowLight && isVeryDark(item.previewColor)) 0.7 else 1.0
+            val colorScore = if (usePalette) {
+                bestColorScore(room.dominantColors, item.previewColor)
+            } else {
+                0.5
+            }
+            val styleScore = when {
+                !useStyle -> 1.0
+                preferredStyle == null -> 1.0
+                item.style == preferredStyle -> 1.0
+                else -> 0.65
+            }
+            val lightPenalty = if (usePalette && room.isLowLight && isVeryDark(item.previewColor)) 0.7 else 1.0
             colorScore * styleScore * lightPenalty
         }
 
         return sorted.map { item ->
             val reasons = buildList {
-                if (preferredStyle != null && item.style == preferredStyle) {
+                if (useStyle && preferredStyle != null && item.style == preferredStyle) {
                     add(RecommendationReason.STYLE_MATCH)
                 }
-                val colorScore = bestColorScore(room.dominantColors, item.previewColor)
-                when {
-                    colorScore >= 0.55 -> add(RecommendationReason.PALETTE_MATCH)
-                    colorScore >= 0.35 -> add(RecommendationReason.SIMILAR_HUE)
-                }
-                if (room.isLowLight && !isVeryDark(item.previewColor)) {
-                    add(RecommendationReason.LOW_LIGHT_OPTIMAL)
+                if (usePalette) {
+                    val colorScore = bestColorScore(room.dominantColors, item.previewColor)
+                    when {
+                        colorScore >= 0.55 -> add(RecommendationReason.PALETTE_MATCH)
+                        colorScore >= 0.35 -> add(RecommendationReason.SIMILAR_HUE)
+                    }
+                    if (room.isLowLight && !isVeryDark(item.previewColor)) {
+                        add(RecommendationReason.LOW_LIGHT_OPTIMAL)
+                    }
                 }
                 if (isEmpty()) add(RecommendationReason.CATALOG_BROWSE)
             }

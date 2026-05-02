@@ -2,6 +2,7 @@ package ru.vsu.cs.diplom_kotl.data.preferences
 
 import android.content.Context
 import android.graphics.Color
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.edit
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -9,9 +10,23 @@ import kotlinx.coroutines.flow.asSharedFlow
 import ru.vsu.cs.diplom_kotl.data.catalog.InteriorStyle
 import ru.vsu.cs.diplom_kotl.domain.recommendation.RoomAnalysis
 
+enum class AppThemeMode {
+    SYSTEM,
+    LIGHT,
+    DARK,
+    ROOM,
+    ;
+
+    companion object {
+        fun fromKey(s: String?): AppThemeMode =
+            entries.find { it.name == s } ?: SYSTEM
+    }
+}
+
 class UserPreferencesRepository(context: Context) {
 
     private val prefs = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private val legacyRecLock = Any()
 
     private val _updates = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
     val updates: SharedFlow<Unit> = _updates.asSharedFlow()
@@ -42,12 +57,58 @@ class UserPreferencesRepository(context: Context) {
         notifyChanged()
     }
 
-    fun isRecommendationsEnabled(): Boolean =
-        prefs.getBoolean(KEY_RECOMMENDATIONS_ENABLED, true)
+    private fun ensureLegacyRecMigration() {
+        synchronized(legacyRecLock) {
+            if (prefs.contains(KEY_RECOMMENDATIONS_ENABLED) && !prefs.contains(KEY_REC_STYLE)) {
+                val v = prefs.getBoolean(KEY_RECOMMENDATIONS_ENABLED, true)
+                prefs.edit {
+                    putBoolean(KEY_REC_STYLE, v)
+                    putBoolean(KEY_REC_PALETTE, v)
+                    remove(KEY_RECOMMENDATIONS_ENABLED)
+                }
+            }
+        }
+    }
 
-    fun setRecommendationsEnabled(enabled: Boolean) {
-        prefs.edit { putBoolean(KEY_RECOMMENDATIONS_ENABLED, enabled) }
+    fun isRecommendationStyleEnabled(): Boolean {
+        ensureLegacyRecMigration()
+        return prefs.getBoolean(KEY_REC_STYLE, true)
+    }
+
+    fun isRecommendationPaletteEnabled(): Boolean {
+        ensureLegacyRecMigration()
+        return prefs.getBoolean(KEY_REC_PALETTE, true)
+    }
+
+    fun setRecommendationStyleEnabled(enabled: Boolean) {
+        ensureLegacyRecMigration()
+        prefs.edit { putBoolean(KEY_REC_STYLE, enabled) }
         notifyChanged()
+    }
+
+    fun setRecommendationPaletteEnabled(enabled: Boolean) {
+        ensureLegacyRecMigration()
+        prefs.edit { putBoolean(KEY_REC_PALETTE, enabled) }
+        notifyChanged()
+    }
+
+    /** Включена ли хотя бы одна персональная настройка (стиль или палитра). */
+    fun isAnyPersonalizedRecommendationEnabled(): Boolean =
+        isRecommendationStyleEnabled() || isRecommendationPaletteEnabled()
+
+    fun getAppThemeMode(): AppThemeMode =
+        AppThemeMode.fromKey(prefs.getString(KEY_THEME_MODE, null))
+
+    fun setAppThemeMode(mode: AppThemeMode) {
+        prefs.edit { putString(KEY_THEME_MODE, mode.name) }
+        notifyChanged()
+    }
+
+    fun getNightModeForDelegate(): Int = when (getAppThemeMode()) {
+        AppThemeMode.SYSTEM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        AppThemeMode.LIGHT -> AppCompatDelegate.MODE_NIGHT_NO
+        AppThemeMode.DARK -> AppCompatDelegate.MODE_NIGHT_YES
+        AppThemeMode.ROOM -> AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
     }
 
     fun getRoomDominantColorsHex(): List<String> {
@@ -139,6 +200,9 @@ class UserPreferencesRepository(context: Context) {
         private const val KEY_ONBOARDING_COMPLETE = "onboarding_complete"
         private const val KEY_PREFERRED_STYLE = "preferred_style"
         private const val KEY_RECOMMENDATIONS_ENABLED = "rec_enabled"
+        private const val KEY_REC_STYLE = "rec_style_enabled"
+        private const val KEY_REC_PALETTE = "rec_palette_enabled"
+        private const val KEY_THEME_MODE = "app_theme_mode"
         private const val KEY_ROOM_COLORS_HEX = "room_colors_hex"
         private const val KEY_ROOM_BRIGHTNESS = "room_brightness"
         private const val KEY_ROOM_LOW_LIGHT = "room_low_light"

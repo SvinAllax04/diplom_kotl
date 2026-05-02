@@ -15,8 +15,9 @@ android {
         applicationId = "ru.vsu.cs.diplom_kotl"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        // versionName: MAJOR.MINOR.PATCH — мажор / минор / патч (см. сообщение к коммиту при релизе)
+        versionCode = 4
+        versionName = "1.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

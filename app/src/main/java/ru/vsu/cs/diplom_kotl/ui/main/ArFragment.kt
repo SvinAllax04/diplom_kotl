@@ -82,14 +82,16 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
-        if (!isAdded || view == null) return@registerForActivityResult
-        if (granted) {
-            runCatching { initializeArOrShowFallback() }
-                .onFailure {
-                    showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
-                }
-        } else {
-            showFallback(getString(R.string.ar_need_camera))
+        view?.post {
+            if (!isAdded || isHidden) return@post
+            if (granted) {
+                runCatching { initializeArOrShowFallback() }
+                    .onFailure {
+                        showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
+                    }
+            } else {
+                showFallback(getString(R.string.ar_need_camera))
+            }
         }
     }
 
@@ -104,19 +106,45 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             shareScenePng()
         }
 
-        if (!hasCameraPermission()) {
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
-        } else {
-            initializeArOrShowFallback()
+        if (!isHidden) {
+            scheduleArEntry()
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) {
+            scheduleArEntry()
         }
     }
 
     override fun onResume() {
         super.onResume()
+        if (!isHidden) {
+            scheduleArEntry()
+        }
         if (retryArInitAfterResume && hasCameraPermission()) {
             retryArInitAfterResume = false
-            initializeArOrShowFallback()
+            scheduleArEntry()
         }
+    }
+
+    private fun scheduleArEntry() {
+        view?.post {
+            if (!isAdded || isHidden) return@post
+            tryStartArAfterPermission()
+        }
+    }
+
+    private fun tryStartArAfterPermission() {
+        if (!hasCameraPermission()) {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            return
+        }
+        runCatching { initializeArOrShowFallback() }
+            .onFailure {
+                showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
+            }
     }
 
     private fun initializeArOrShowFallback() {
@@ -450,11 +478,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         }
 
         root.findViewById<MaterialButton>(R.id.arFallbackBackCatalog).setOnClickListener {
-            startActivity(
-                Intent(requireContext(), MainShellActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                },
-            )
+            (activity as? MainShellActivity)?.openRecommendationsTab()
         }
     }
 

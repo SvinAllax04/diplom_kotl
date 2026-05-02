@@ -17,8 +17,10 @@
     <string name="role_store_label">Магазин</string>
     <string name="role_admin_label">Администратор</string>
 
-    <string name="nav_home">Главная</string>
+    <string name="nav_recommendations">Рекомендации</string>
+    <string name="nav_search">Поиск</string>
     <string name="nav_ar">AR</string>
+    <string name="nav_settings">Настройки</string>
     <string name="nav_profile">Профиль</string>
 
     <string name="home_recommendations_title">Рекомендации для вас</string>
@@ -37,7 +39,6 @@
 
     <string name="profile_title">Профиль</string>
     <string name="profile_style_hint">Предпочитаемый стиль мебели</string>
-    <string name="profile_rec_switch">Учитывать стиль и цветовую гамму в рекомендациях</string>
     <string name="profile_scan_room">Заново проанализировать цвета комнаты</string>
     <string name="profile_logout">Выйти</string>
 
@@ -103,6 +104,8 @@
     <string name="room_capture_camera_unavailable">Камера недоступна. Выберите фото из галереи.</string>
 
     <string name="home_subtitle_personalized">Персональные рекомендации по стилю и палитре комнаты</string>
+    <string name="home_subtitle_style_only">Учитывается только предпочитаемый стиль</string>
+    <string name="home_subtitle_palette_only">Учитывается только цветовая гамма комнаты</string>
     <string name="home_subtitle_catalog_only">Персональные рекомендации отключены — показан общий каталог</string>
     <string name="rec_reason_style">подходит по стилю</string>
     <string name="rec_reason_palette">сочетается с палитрой комнаты</string>
@@ -175,4 +178,28 @@
     <string name="mod_status_pending">на проверке</string>
     <string name="mod_status_approved">одобрен</string>
     <string name="mod_status_rejected">отклонён</string>
+
+    <string name="search_title">Поиск товаров</string>
+    <string name="search_rec_style">Учитывать стиль в рекомендациях</string>
+    <string name="search_rec_palette">Учитывать цветовую гамму комнаты</string>
+    <string name="search_category_hint">Тип мебели</string>
+    <string name="search_category_all">Все типы</string>
+    <string name="search_category_chair">Кресло / стул</string>
+    <string name="search_category_table">Стол</string>
+    <string name="search_category_sofa">Диван</string>
+    <string name="search_category_storage">Хранение (стеллаж, шкаф)</string>
+    <string name="search_category_other">Прочее</string>
+    <string name="search_query_hint">Поиск по названию</string>
+    <string name="search_sort_price_asc">Сортировка: дешевле сначала</string>
+    <string name="search_sort_price_desc">Сортировка: дороже сначала</string>
+    <string name="search_result_meta">%1$s</string>
+
+    <string name="settings_title">Настройки</string>
+    <string name="settings_theme_section">Оформление</string>
+    <string name="settings_theme_system">Как в системе</string>
+    <string name="settings_theme_light">Светлая тема</string>
+    <string name="settings_theme_dark">Тёмная тема</string>
+    <string name="settings_theme_room">Под цветовую гамму комнаты</string>
+    <string name="settings_theme_room_hint">Акценты интерфейса подстраиваются под основной цвет палитры комнаты из профиля.</string>
+    <string name="settings_apply_theme">Применить</string>
 </resources>

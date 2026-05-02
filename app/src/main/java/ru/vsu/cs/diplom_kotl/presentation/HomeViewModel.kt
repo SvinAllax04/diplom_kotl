@@ -45,13 +45,15 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             isLowLight = prefs.isRoomLowLight(),
             isLikelyEmpty = colors.isEmpty(),
         )
-        val recEnabled = prefs.isRecommendationsEnabled()
-        _personalizedActive.value = recEnabled
+        val useStyle = prefs.isRecommendationStyleEnabled()
+        val usePalette = prefs.isRecommendationPaletteEnabled()
+        _personalizedActive.value = prefs.isAnyPersonalizedRecommendationEnabled()
         val detailed = engine.recommendDetailed(
             room = analysis,
             items = catalog.all(),
             preferredStyle = prefs.getPreferredStyle(),
-            recommendationsEnabled = recEnabled,
+            useStyle = useStyle,
+            usePalette = usePalette,
         )
         val ctx = getApplication<Application>()
         _rows.value = detailed.map { rf ->

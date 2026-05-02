@@ -20,7 +20,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.switchmaterial.SwitchMaterial
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.data.auth.AuthManager
 import ru.vsu.cs.diplom_kotl.data.auth.UserRole
@@ -117,12 +116,6 @@ class ProfileFragment : Fragment(R.layout.fragment_profile) {
             val label = parent.getItemAtPosition(position) as String
             val style = stylePairs.first { it.second == label }.first
             arViewModel.setStyle(style)
-        }
-
-        val recSwitch = view.findViewById<SwitchMaterial>(R.id.profileRecSwitch)
-        recSwitch.isChecked = prefs.isRecommendationsEnabled()
-        recSwitch.setOnCheckedChangeListener { _, checked ->
-            arViewModel.setRecommendationsEnabled(checked)
         }
 
         view.findViewById<MaterialButton>(R.id.profileScanRoomButton).setOnClickListener {

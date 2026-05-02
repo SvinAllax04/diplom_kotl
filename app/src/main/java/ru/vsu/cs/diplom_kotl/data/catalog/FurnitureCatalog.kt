@@ -9,6 +9,7 @@ import ru.vsu.cs.diplom_kotl.data.auth.UserRole
 data class FurnitureItem(
     val id: String,
     val title: String,
+    val category: FurnitureCategory,
     val assetPath: String,
     /** Путь относительно корня assets, например `catalog/images/chair.jpg` */
     val thumbnailAssetPath: String? = null,
@@ -78,6 +79,7 @@ class FurnitureCatalog(private val context: Context) {
             FurnitureItem(
                 id = "chair_beige",
                 title = "Кресло бежевое",
+                category = FurnitureCategory.inferFromTitle("Кресло бежевое"),
                 assetPath = "models/chair.glb",
                 thumbnailAssetPath = null,
                 galleryAssetPaths = emptyList(),
@@ -94,6 +96,7 @@ class FurnitureCatalog(private val context: Context) {
             FurnitureItem(
                 id = "sofa_gray",
                 title = "Диван серый",
+                category = FurnitureCategory.inferFromTitle("Диван серый"),
                 assetPath = "models/chair.glb",
                 thumbnailAssetPath = null,
                 galleryAssetPaths = emptyList(),
@@ -110,6 +113,7 @@ class FurnitureCatalog(private val context: Context) {
             FurnitureItem(
                 id = "table_oak",
                 title = "Стол дубовый",
+                category = FurnitureCategory.inferFromTitle("Стол дубовый"),
                 assetPath = "models/chair.glb",
                 thumbnailAssetPath = null,
                 galleryAssetPaths = emptyList(),
@@ -126,6 +130,7 @@ class FurnitureCatalog(private val context: Context) {
             FurnitureItem(
                 id = "shelf_white",
                 title = "Стеллаж белый",
+                category = FurnitureCategory.inferFromTitle("Стеллаж белый"),
                 assetPath = "models/chair.glb",
                 thumbnailAssetPath = null,
                 galleryAssetPaths = emptyList(),

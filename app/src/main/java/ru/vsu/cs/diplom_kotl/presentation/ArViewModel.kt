@@ -22,7 +22,8 @@ data class ArUiState(
     val roomDominantColors: List<Int> = emptyList(),
     val averageBrightness: Float = 0f,
     val lowLightWarning: Boolean = false,
-    val recommendationsEnabled: Boolean = true,
+    val recommendationStyleEnabled: Boolean = true,
+    val recommendationPaletteEnabled: Boolean = true,
     val selectedStyle: InteriorStyle? = null,
     val recommendations: List<FurnitureItem> = emptyList(),
 )
@@ -45,23 +46,33 @@ class ArViewModel(
         }
     }
 
+    private fun rank(
+        room: RoomAnalysis,
+        style: InteriorStyle?,
+    ): List<FurnitureItem> {
+        return recommendationEngine.recommend(
+            room = room,
+            items = catalog.all(),
+            preferredStyle = style,
+            useStyle = prefs.isRecommendationStyleEnabled(),
+            usePalette = prefs.isRecommendationPaletteEnabled(),
+        )
+    }
+
     private fun buildInitialState(): ArUiState {
         val prefsRoom = roomSnapshotFromPrefs()
         val style = prefs.getPreferredStyle()
-        val enabled = prefs.isRecommendationsEnabled()
-        val ranked = recommendationEngine.recommend(
-            room = prefsRoom,
-            items = catalog.all(),
-            preferredStyle = style,
-            recommendationsEnabled = enabled,
-        )
+        val useStyle = prefs.isRecommendationStyleEnabled()
+        val usePalette = prefs.isRecommendationPaletteEnabled()
+        val ranked = rank(prefsRoom, style)
         return ArUiState(
             selectedFurniture = ranked.firstOrNull(),
             roomDominantColor = prefsRoom.dominantColors.firstOrNull(),
             roomDominantColors = prefsRoom.dominantColors,
             averageBrightness = prefsRoom.averageBrightness,
             lowLightWarning = prefsRoom.isLowLight,
-            recommendationsEnabled = enabled,
+            recommendationStyleEnabled = useStyle,
+            recommendationPaletteEnabled = usePalette,
             selectedStyle = style,
             recommendations = ranked,
         )
@@ -85,75 +96,65 @@ class ArViewModel(
         prefs.setPreferredStyle(style)
         val old = _uiState.value
         val room = currentRoomAnalysis(old)
-        val ranked = recommendationEngine.recommend(
-            room = room,
-            items = catalog.all(),
-            preferredStyle = style,
-            recommendationsEnabled = old.recommendationsEnabled,
-        )
+        val ranked = rank(room, style)
         _uiState.value = old.copy(
             selectedStyle = style,
+            recommendationStyleEnabled = prefs.isRecommendationStyleEnabled(),
+            recommendationPaletteEnabled = prefs.isRecommendationPaletteEnabled(),
             recommendations = ranked,
             selectedFurniture = ranked.firstOrNull() ?: old.selectedFurniture,
         )
     }
 
-    fun setRecommendationsEnabled(enabled: Boolean) {
-        prefs.setRecommendationsEnabled(enabled)
+    fun setRecommendationStyleEnabled(enabled: Boolean) {
+        prefs.setRecommendationStyleEnabled(enabled)
         val old = _uiState.value
         val room = currentRoomAnalysis(old)
-        val ranked = recommendationEngine.recommend(
-            room = room,
-            items = catalog.all(),
-            preferredStyle = old.selectedStyle,
-            recommendationsEnabled = enabled,
-        )
+        val ranked = rank(room, old.selectedStyle)
         _uiState.value = old.copy(
-            recommendationsEnabled = enabled,
+            recommendationStyleEnabled = enabled,
             recommendations = ranked,
             selectedFurniture = ranked.firstOrNull() ?: old.selectedFurniture,
         )
     }
 
-    /**
-     * После смены палитры комнаты в профиле (новый снимок).
-     */
+    fun setRecommendationPaletteEnabled(enabled: Boolean) {
+        prefs.setRecommendationPaletteEnabled(enabled)
+        val old = _uiState.value
+        val room = currentRoomAnalysis(old)
+        val ranked = rank(room, old.selectedStyle)
+        _uiState.value = old.copy(
+            recommendationPaletteEnabled = enabled,
+            recommendations = ranked,
+            selectedFurniture = ranked.firstOrNull() ?: old.selectedFurniture,
+        )
+    }
+
     fun applySavedRoomFromPrefs() {
         val analysis = roomSnapshotFromPrefs()
         val old = _uiState.value
-        val ranked = recommendationEngine.recommend(
-            room = analysis,
-            items = catalog.all(),
-            preferredStyle = old.selectedStyle,
-            recommendationsEnabled = old.recommendationsEnabled,
-        )
+        val ranked = rank(analysis, old.selectedStyle)
         _uiState.value = old.copy(
             roomDominantColor = analysis.dominantColors.firstOrNull(),
             roomDominantColors = analysis.dominantColors,
             averageBrightness = analysis.averageBrightness,
             lowLightWarning = analysis.isLowLight,
+            recommendationStyleEnabled = prefs.isRecommendationStyleEnabled(),
+            recommendationPaletteEnabled = prefs.isRecommendationPaletteEnabled(),
             recommendations = ranked,
             selectedFurniture = ranked.firstOrNull() ?: old.selectedFurniture,
         )
     }
 
-    /**
-     * Обновить только стиль и флаг рекомендаций из prefs; живые цвета с камеры сохраняются.
-     */
     fun reloadPrefsWithoutResettingLiveColors() {
         val old = _uiState.value
         val style = prefs.getPreferredStyle()
-        val enabled = prefs.isRecommendationsEnabled()
         val room = currentRoomAnalysis(old)
-        val ranked = recommendationEngine.recommend(
-            room = room,
-            items = catalog.all(),
-            preferredStyle = style,
-            recommendationsEnabled = enabled,
-        )
+        val ranked = rank(room, style)
         _uiState.value = old.copy(
             selectedStyle = style,
-            recommendationsEnabled = enabled,
+            recommendationStyleEnabled = prefs.isRecommendationStyleEnabled(),
+            recommendationPaletteEnabled = prefs.isRecommendationPaletteEnabled(),
             recommendations = ranked,
             selectedFurniture = ranked.firstOrNull() ?: old.selectedFurniture,
         )
@@ -175,17 +176,14 @@ class ArViewModel(
     fun updateRoomColor(bitmap: Bitmap) {
         viewModelScope.launch {
             val analysis = roomAnalysisService.analyze(bitmap)
-            val ranked = recommendationEngine.recommend(
-                room = analysis,
-                items = catalog.all(),
-                preferredStyle = _uiState.value.selectedStyle,
-                recommendationsEnabled = _uiState.value.recommendationsEnabled,
-            )
+            val ranked = rank(analysis, _uiState.value.selectedStyle)
             _uiState.value = _uiState.value.copy(
                 roomDominantColor = analysis.dominantColors.firstOrNull(),
                 roomDominantColors = analysis.dominantColors,
                 averageBrightness = analysis.averageBrightness,
                 lowLightWarning = analysis.isLowLight,
+                recommendationStyleEnabled = prefs.isRecommendationStyleEnabled(),
+                recommendationPaletteEnabled = prefs.isRecommendationPaletteEnabled(),
                 recommendations = ranked,
                 selectedFurniture = ranked.firstOrNull() ?: _uiState.value.selectedFurniture,
             )
