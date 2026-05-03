@@ -4,8 +4,6 @@ import android.content.Context
 import com.google.android.filament.Engine
 import io.github.sceneview.loaders.ModelLoader
 import io.github.sceneview.model.ModelInstance
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import ru.vsu.cs.diplom_kotl.data.diagnostics.ArCameraDiagnosticsLog
 import java.util.concurrent.ConcurrentHashMap
 
@@ -38,7 +36,7 @@ class ModelManager(
     /**
      * Загрузка модели из assets. При отсутствии файла или ошибке — null (без вылета приложения).
      */
-    suspend fun getOrLoad(assetPath: String): ModelInstance? {
+    fun getOrLoad(assetPath: String): ModelInstance? {
         val path = normalizeAssetPath(assetPath)
         if (path.isBlank()) {
             ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, "Пустой assetPath модели")
@@ -68,17 +66,18 @@ class ModelManager(
             ArCameraDiagnosticsLog.SOURCE_AR,
             "Загрузка .glb из assets (ModelLoader.createModelInstance): $path",
         )
+        // ВАЖНО: createModelInstance обращается к Filament-движку, который требует
+        // вызова с главного (или GL) потока. withContext(Dispatchers.IO) здесь убьёт
+        // приложение через SIGABRT. ModelLoader сам управляет внутренним threading.
         return runCatching {
-            withContext(Dispatchers.IO) {
-                cache[path]?.let { return@withContext it }
-                val instance = modelLoader.createModelInstance(assetFileLocation = path)
-                cache[path] = instance
-                ArCameraDiagnosticsLog.append(
-                    ArCameraDiagnosticsLog.SOURCE_AR,
-                    "Модель прочитана из assets, ModelInstance создан и помещён в кэш: $path",
-                )
-                instance
-            }
+            cache[path]?.let { return it }
+            val instance = modelLoader.createModelInstance(assetFileLocation = path)
+            cache[path] = instance
+            ArCameraDiagnosticsLog.append(
+                ArCameraDiagnosticsLog.SOURCE_AR,
+                "Модель создана и помещена в кэш: $path",
+            )
+            instance
         }.getOrElse { e ->
             ArCameraDiagnosticsLog.append(
                 ArCameraDiagnosticsLog.SOURCE_AR,

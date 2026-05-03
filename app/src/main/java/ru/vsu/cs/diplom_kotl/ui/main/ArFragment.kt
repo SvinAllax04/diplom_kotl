@@ -32,7 +32,6 @@ import io.github.sceneview.ar.ARSceneView
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.math.Position
 import io.github.sceneview.node.ModelNode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -358,7 +357,10 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
                     val st = statusText ?: return@collect
                     val preload = state.recommendations.take(2)
                     preload.forEach { item ->
-                        launch(Dispatchers.IO) {
+                        // Не используем Dispatchers.IO — ModelLoader.createModelInstance
+                        // обращается к Filament, который требует Main/GL потока.
+                        // Запускаем в контексте Main (умолчание для lifecycleScope).
+                        launch {
                             runCatching {
                                 val inst = mm.getOrLoad(item.assetPath)
                                 if (inst != null) {
@@ -562,7 +564,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         if (item != null) {
             demoSection.visibility = View.VISIBLE
             demoTitle.text = item.title
-            val nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.forLanguageTag("ru-RU"))
+            val nf = java.text.NumberFormat.getNumberInstance(Locale.forLanguageTag("ru-RU"))
             demoDetails.text = buildString {
                 append(getString(R.string.card_style_label, styleLabel(item.style)))
                 append("\n")
