@@ -32,10 +32,12 @@ import io.github.sceneview.ar.ARSceneView
 import io.github.sceneview.ar.node.AnchorNode
 import io.github.sceneview.math.Position
 import io.github.sceneview.node.ModelNode
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import coil.load
 import ru.vsu.cs.diplom_kotl.R
 import ru.vsu.cs.diplom_kotl.ar.ArObjectController
@@ -335,16 +337,29 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
             }
 
             viewLifecycleOwner.lifecycleScope.launch {
-                runCatching {
+                // Откладываем восстановление сцены, пока ARCore не обработает первые кадры.
+                // Немедленный вызов createModelInstance (getOrLoad) во время старта ARCore
+                // может вызвать SIGSEGV в tango_pool: сессия ещё не настроила SurfaceTexture
+                // камеры, а главный поток занят I/O — tango-треды получают нулевой указатель.
+                delay(2500)
+                if (!isAdded || view == null || objectController == null ||
+                    sceneRepository == null || modelManager == null
+                ) {
+                    arLog("Восстановление сцены: ресурсы уже уничтожены после задержки, пропуск")
+                    return@launch
+                }
+                try {
                     arLog("Чтение сохранённой AR-сцены с диска…")
-                    val state = sceneRepository!!.load()
+                    val state = withContext(Dispatchers.IO) {
+                        sceneRepository!!.load()
+                    }
                     arLog("Файл сцены: ${state.objects.size} объект(ов) в данных")
                     objectController!!.restore(
                         state = state,
                         modelManager = modelManager!!,
                     )
                     statusText?.text = getString(R.string.ar_scene_loaded, objectController!!.objectCount())
-                }.onFailure { e ->
+                } catch (e: Throwable) {
                     arLog("Ошибка при восстановлении сцены: ${e.javaClass.simpleName}: ${e.message}")
                 }
             }

@@ -178,7 +178,7 @@ class ArObjectController(
     fun canAddObject(): Boolean = objects.size < maxObjects
     fun objectCount(): Int = objects.size
 
-    suspend fun restore(
+    fun restore(
         state: SceneState,
         modelManager: ModelManager
     ) {
