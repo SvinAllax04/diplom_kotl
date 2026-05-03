@@ -77,6 +77,8 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private var arFullSetupDone = false
     /** Защита от повторного входа в initializeArOrShowFallback (onResume + launcher могут вызвать одновременно) */
     private var arInitializing = false
+    /** Защита от двойного запуска системного диалога разрешений */
+    private var cameraPermissionPending = false
     private var statusText: TextView? = null
     private var selectedAssetPath: String = "catalog/models/chair.glb"
     private var pendingSelectItemId: String? = null
@@ -87,14 +89,15 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private val cameraPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { granted ->
+        cameraPermissionPending = false
         view?.post {
             if (!isAdded || isHidden) return@post
             if (granted) {
-                arLog("Разрешение CAMERA: предоставлено")
+                arLog("Разрешение CAMERA: предоставлено → initializeArOrShowFallback")
                 runCatching { initializeArOrShowFallback() }
-                    .onFailure {
-                        arLog("Ошибка инициализации после разрешения: ${it.message}")
-                        showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
+                    .onFailure { e ->
+                        arLog("Ошибка инициализации после разрешения: ${e.javaClass.simpleName}: ${e.message}")
+                        showFallback(getString(R.string.ar_init_failed, e.message ?: "unknown"))
                     }
             } else {
                 arLog("Разрешение CAMERA: отклонено пользователем")
@@ -146,16 +149,27 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     }
 
     private fun tryStartArAfterPermission() {
+        arLog("tryStartArAfterPermission: hasCameraPermission=${hasCameraPermission()}, pending=$cameraPermissionPending, initializing=$arInitializing, fullSetupDone=$arFullSetupDone")
         if (!hasCameraPermission()) {
+            if (cameraPermissionPending) {
+                arLog("Диалог разрешения CAMERA уже открыт, повторный запуск отклонён")
+                return
+            }
             arLog("Запрос разрешения CAMERA (вкладка AR видна)")
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            cameraPermissionPending = true
+            runCatching { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }
+                .onFailure { e ->
+                    cameraPermissionPending = false
+                    arLog("cameraPermissionLauncher.launch: ИСКЛЮЧЕНИЕ ${e.javaClass.simpleName}: ${e.message}")
+                    showFallback(getString(R.string.ar_init_failed, e.message ?: e.javaClass.simpleName))
+                }
             return
         }
         arLog("CAMERA уже есть, запуск initializeArOrShowFallback")
         runCatching { initializeArOrShowFallback() }
-            .onFailure {
-                arLog("initializeArOrShowFallback исключение: ${it.message}")
-                showFallback(getString(R.string.ar_init_failed, it.message ?: "unknown"))
+            .onFailure { e ->
+                arLog("initializeArOrShowFallback исключение: ${e.javaClass.simpleName}: ${e.message}")
+                showFallback(getString(R.string.ar_init_failed, e.message ?: "unknown"))
             }
     }
 
@@ -504,6 +518,7 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         arInitialized = false
         arFullSetupDone = false
         arInitializing = false
+        cameraPermissionPending = false
         arLog("onDestroyView: AR view уничтожен, все флаги сброшены")
         super.onDestroyView()
     }
