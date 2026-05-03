@@ -52,6 +52,7 @@ import ru.vsu.cs.diplom_kotl.domain.placement.PlacementPlanner
 import ru.vsu.cs.diplom_kotl.domain.placement.RoomBounds
 import ru.vsu.cs.diplom_kotl.presentation.ArViewModel
 import ru.vsu.cs.diplom_kotl.ui.catalog.FurnitureCatalogAdapter
+import android.util.Log
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Locale
@@ -74,6 +75,8 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     private var uiStateCollectJob: Job? = null
     private var arInitialized = false
     private var arFullSetupDone = false
+    /** Защита от повторного входа в initializeArOrShowFallback (onResume + launcher могут вызвать одновременно) */
+    private var arInitializing = false
     private var statusText: TextView? = null
     private var selectedAssetPath: String = "catalog/models/chair.glb"
     private var pendingSelectItemId: String? = null
@@ -157,60 +160,98 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
     }
 
     private fun initializeArOrShowFallback() {
-        if (!isAdded || view == null) return
+        if (!isAdded || view == null) {
+            arLog("initializeArOrShowFallback: фрагмент не готов (isAdded=${isAdded}), выход")
+            return
+        }
+        if (arInitializing) {
+            arLog("initializeArOrShowFallback: инициализация уже идёт, повторный вызов отклонён")
+            return
+        }
+        if (arFullSetupDone) {
+            val root = view ?: return
+            arLog("AR уже инициализирован (arFullSetupDone), только показ overlay")
+            root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
+            root.findViewById<View>(R.id.arOverlayContent).visibility = View.VISIBLE
+            return
+        }
+        arInitializing = true
+        arLog("initializeArOrShowFallback: старт")
+
         val ctx = requireContext()
-        val arAvailability = ArCoreApk.getInstance().checkAvailability(ctx)
-        arLog("ARCore availability: supported=${arAvailability.isSupported}")
+        val arAvailability = try {
+            ArCoreApk.getInstance().checkAvailability(ctx)
+        } catch (e: Throwable) {
+            arLog("checkAvailability: ИСКЛЮЧЕНИЕ ${e.javaClass.simpleName}: ${e.message}")
+            arInitializing = false
+            showFallback(getString(R.string.ar_arcore_error, e.message ?: e.javaClass.simpleName))
+            return
+        }
+        arLog("ARCore availability: isSupported=${arAvailability.isSupported}, value=$arAvailability")
         if (!arAvailability.isSupported) {
             arLog("Устройство не поддерживает ARCore (fallback UI)")
+            arInitializing = false
             showFallback(getString(R.string.ar_message_device_no_ar))
             return
         }
 
         try {
-            when (ArCoreApk.getInstance().requestInstall(requireActivity(), true)) {
+            val installStatus = ArCoreApk.getInstance().requestInstall(requireActivity(), true)
+            arLog("ARCore requestInstall: status=$installStatus")
+            when (installStatus) {
                 ArCoreApk.InstallStatus.INSTALL_REQUESTED -> {
                     arLog("ARCore: запрошена установка, ожидание onResume")
                     retryArInitAfterResume = true
+                    arInitializing = false
                     return
                 }
                 ArCoreApk.InstallStatus.INSTALLED -> {
-                    arLog("ARCore: INSTALLED")
+                    arLog("ARCore: INSTALLED — продолжаем")
                 }
             }
         } catch (_: UnavailableUserDeclinedInstallationException) {
             arLog("ARCore: пользователь отклонил установку")
+            arInitializing = false
             showFallback(getString(R.string.ar_install_arcore))
             return
         } catch (_: UnavailableDeviceNotCompatibleException) {
-            arLog("ARCore: устройство несовместимо")
+            arLog("ARCore: устройство несовместимо с AR")
+            arInitializing = false
             showFallback(getString(R.string.ar_device_not_compatible))
             return
-        } catch (e: Exception) {
-            arLog("ARCore requestInstall: ${e.javaClass.simpleName} ${e.message}")
+        } catch (e: Throwable) {
+            arLog("ARCore requestInstall: ИСКЛЮЧЕНИЕ ${e.javaClass.simpleName}: ${e.message}")
+            arInitializing = false
             showFallback(getString(R.string.ar_arcore_error, e.message ?: e.javaClass.simpleName))
             return
         }
 
-        val root = view ?: return
+        val root = view ?: run {
+            arLog("initializeArOrShowFallback: view стал null после requestInstall, выход")
+            arInitializing = false
+            return
+        }
         val container = root.findViewById<FrameLayout>(R.id.arOuterContainer)
         val overlay = root.findViewById<View>(R.id.arOverlayContent)
 
-        if (arFullSetupDone) {
-            arLog("AR уже инициализирован (arFullSetupDone), только показ overlay")
-            root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
-            overlay.visibility = View.VISIBLE
-            return
-        }
-
-        arLog("Создание ARSceneView и привязка каталога…")
+        arLog("Создание ARSceneView — начало конструктора")
         runCatching {
             if (arSceneView == null) {
-                val sv = ARSceneView(
-                    context = ctx,
-                    sharedActivity = requireActivity(),
-                    sharedLifecycle = viewLifecycleOwner.lifecycle,
-                )
+                arLog("ARSceneView: вызов конструктора (context, sharedActivity, sharedLifecycle)")
+                val sv = try {
+                    ARSceneView(
+                        context = ctx,
+                        sharedActivity = requireActivity(),
+                        sharedLifecycle = viewLifecycleOwner.lifecycle,
+                    )
+                } catch (e: Throwable) {
+                    arLog(
+                        "ARSceneView: ИСКЛЮЧЕНИЕ в конструкторе — ${e.javaClass.name}: ${e.message}\n" +
+                            e.stackTrace.take(6).joinToString("\n") { "  at $it" },
+                    )
+                    throw e
+                }
+                arLog("ARSceneView: конструктор завершён, добавление в контейнер")
                 container.addView(
                     sv,
                     0,
@@ -220,9 +261,10 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
                     ),
                 )
                 arSceneView = sv
+                arLog("ARSceneView: добавлен в View-иерархию")
             }
 
-            val sv = arSceneView ?: error("ARSceneView")
+            val sv = arSceneView ?: error("ARSceneView неожиданно null после создания")
 
             statusText = root.findViewById(R.id.arStatusText)
             root.findViewById<ScrollView>(R.id.arFallbackScroll).visibility = View.GONE
@@ -331,13 +373,18 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
 
             arInitialized = true
             arFullSetupDone = true
+            arInitializing = false
             retryArInitAfterResume = false
-            arLog("AR сцена готова (arFullSetupDone=true)")
-        }.onFailure {
-            arLog("Сбой полной инициализации AR: ${it.message}")
+            arLog("AR сцена готова (arFullSetupDone=true, arInitializing=false)")
+        }.onFailure { e ->
+            arInitializing = false
+            arLog(
+                "Сбой полной инициализации AR: ${e.javaClass.name}: ${e.message}\n" +
+                    e.stackTrace.take(8).joinToString("\n") { "  at $it" },
+            )
             showFallback(
                 getString(R.string.ar_message_module_wip) + "\n\n" +
-                    getString(R.string.ar_init_failed, it.message ?: "unknown"),
+                    getString(R.string.ar_init_failed, e.message ?: e.javaClass.simpleName),
             )
         }
     }
@@ -456,7 +503,8 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
         statusText = null
         arInitialized = false
         arFullSetupDone = false
-        arLog("onDestroyView: AR view уничтожен")
+        arInitializing = false
+        arLog("onDestroyView: AR view уничтожен, все флаги сброшены")
         super.onDestroyView()
     }
 
@@ -604,5 +652,6 @@ class ArFragment : Fragment(R.layout.fragment_ar) {
 
     private fun arLog(message: String) {
         ArCameraDiagnosticsLog.append(ArCameraDiagnosticsLog.SOURCE_AR, message)
+        Log.d("AR_DIPLOM", message)
     }
 }
